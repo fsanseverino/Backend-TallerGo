@@ -1,0 +1,6 @@
+@Backend_TallerGo_HostAddress = http://localhost:5213
+
+GET {{Backend_TallerGo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
