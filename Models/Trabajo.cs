@@ -19,6 +19,7 @@ public class Trabajo
     public string Id { get; set; } = string.Empty;
     public string VehiculoId { get; set; } = string.Empty;
     public string ClienteId { get; set; } = string.Empty;
+    public string? EmpleadoId { get; set; }
     public string Descripcion { get; set; } = string.Empty;
     public DateTime FechaIngreso { get; set; }
     public string? FechaRealizacion { get; set; }

@@ -21,6 +21,14 @@ public class DbInitializer
         };
         db.Clientes.AddRange(clientes);
 
+        var empleados = new[]
+        {
+            Empleado("emp-001", "Diego", "Ramírez", Especialidad.MECANICO, "11-6000-1001", "diego.ramirez@tallergo.com", "Rivadavia 100", "2020-03-01T09:00:00Z", EstadoEmpleado.ACTIVO),
+            Empleado("emp-002", "Silvia", "López", Especialidad.CHAPISTA, "11-6000-1002", "silvia.lopez@tallergo.com", "Mitre 200", "2021-07-15T09:00:00Z", EstadoEmpleado.ACTIVO),
+            Empleado("emp-003", "Marcos", "Torres", Especialidad.ELECTRICISTA, "11-6000-1003", "marcos.torres@tallergo.com", "Belgrano 300", "2022-01-10T09:00:00Z", EstadoEmpleado.ACTIVO),
+        };
+        db.Empleados.AddRange(empleados);
+
         var vehiculos = new[]
         {
             Vehiculo("veh-001", "cli-001", "Toyota", "Corolla", 2020, "AB123CD", "Gris", "8X1AB12C345678901"),
@@ -33,12 +41,12 @@ public class DbInitializer
 
         var trabajos = new[]
         {
-            Trabajo("tra-001", "veh-001", "cli-001", "Cambio de aceite y filtros", "2026-06-20", "2026-06-22", EstadoTrabajo.FINALIZADO, 25000, "Aceite sintético y filtro de aire."),
-            Trabajo("tra-002", "veh-002", "cli-002", "Reparación de frenos", "2026-07-05", "2026-07-07", EstadoTrabajo.FINALIZADO, 45000, "Pastillas y discos delanteros."),
-            Trabajo("tra-003", "veh-003", "cli-003", "Alineación y balanceo", "2026-07-10", "2026-07-10", EstadoTrabajo.FINALIZADO, 15000, ""),
-            Trabajo("tra-004", "veh-004", "cli-004", "Reparación de clutch", "2026-08-01", "2026-08-04", EstadoTrabajo.FINALIZADO, 80000, "Cambio completo de kit de embrague."),
-            Trabajo("tra-005", "veh-005", "cli-001", "Cambio de batería", "2026-08-20", null, EstadoTrabajo.SIN_INICIAR, 35000, "Batería nueva 70Ah."),
-            Trabajo("tra-006", "veh-001", "cli-001", "Diagnóstico de motor", "2026-08-25", null, EstadoTrabajo.EN_CURSO, 10000, "Pendiente de resultado de diagnóstico."),
+            Trabajo("tra-001", "veh-001", "cli-001", "emp-001", "Cambio de aceite y filtros", "2026-06-20", "2026-06-22", EstadoTrabajo.FINALIZADO, 25000, "Aceite sintético y filtro de aire."),
+            Trabajo("tra-002", "veh-002", "cli-002", "emp-002", "Reparación de frenos", "2026-07-05", "2026-07-07", EstadoTrabajo.FINALIZADO, 45000, "Pastillas y discos delanteros."),
+            Trabajo("tra-003", "veh-003", "cli-003", null, "Alineación y balanceo", "2026-07-10", "2026-07-10", EstadoTrabajo.FINALIZADO, 15000, ""),
+            Trabajo("tra-004", "veh-004", "cli-004", "emp-003", "Reparación de clutch", "2026-08-01", "2026-08-04", EstadoTrabajo.FINALIZADO, 80000, "Cambio completo de kit de embrague."),
+            Trabajo("tra-005", "veh-005", "cli-001", null, "Cambio de batería", "2026-08-20", null, EstadoTrabajo.SIN_INICIAR, 35000, "Batería nueva 70Ah."),
+            Trabajo("tra-006", "veh-001", "cli-001", "emp-001", "Diagnóstico de motor", "2026-08-25", null, EstadoTrabajo.EN_CURSO, 10000, "Pendiente de resultado de diagnóstico."),
         };
         db.Trabajos.AddRange(trabajos);
 
@@ -67,7 +75,7 @@ public class DbInitializer
         db.SaveChanges();
     }
 
-    private static Cliente Cliente(string id, string nombre, string apellido, TipoDocumento tipo, string documento, string telefono, string email, string direccion, string createdAt) =>
+        private static Cliente Cliente(string id, string nombre, string apellido, TipoDocumento tipo, string documento, string telefono, string email, string direccion, string createdAt) =>
         new Cliente()
         {
             Id = id,
@@ -79,6 +87,21 @@ public class DbInitializer
             Email = email,
             Direccion = direccion,
             CreatedAt = ParseDate(createdAt),
+        };
+
+    private static Empleado Empleado(string id, string nombre, string apellido, Especialidad especialidad, string telefono, string email, string direccion, string fechaIngreso, EstadoEmpleado estado) =>
+        new Empleado()
+        {
+            Id = id,
+            Nombre = nombre,
+            Apellido = apellido,
+            Especialidad = especialidad,
+            Telefono = telefono,
+            Email = email,
+            Direccion = direccion,
+            FechaIngreso = ParseDate(fechaIngreso),
+            Estado = estado,
+            CreatedAt = ParseDate(fechaIngreso),
         };
 
     private static Vehiculo Vehiculo(string id, string clienteId, string marca, string modelo, int anio, string patente, string color, string chasis) =>
@@ -94,12 +117,13 @@ public class DbInitializer
             Chasis = chasis,
         };
 
-    private static Trabajo Trabajo(string id, string vehiculoId, string clienteId, string descripcion, string fechaIngreso, string? fechaRealizacion, EstadoTrabajo estado, decimal monto, string observaciones) =>
+    private static Trabajo Trabajo(string id, string vehiculoId, string clienteId, string? empleadoId, string descripcion, string fechaIngreso, string? fechaRealizacion, EstadoTrabajo estado, decimal monto, string observaciones) =>
         new Trabajo()
         {
             Id = id,
             VehiculoId = vehiculoId,
             ClienteId = clienteId,
+            EmpleadoId = empleadoId,
             Descripcion = descripcion,
             FechaIngreso = ParseDate(fechaIngreso),
             FechaRealizacion = fechaRealizacion,

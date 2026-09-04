@@ -12,6 +12,7 @@ public class TallerGoDbContext : DbContext
 
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<Vehiculo> Vehiculos => Set<Vehiculo>();
+    public DbSet<Empleado> Empleados => Set<Empleado>();
     public DbSet<Trabajo> Trabajos => Set<Trabajo>();
     public DbSet<TrabajoItem> TrabajoItems => Set<TrabajoItem>();
     public DbSet<PagoTrabajo> PagosTrabajo => Set<PagoTrabajo>();
@@ -23,7 +24,7 @@ public class TallerGoDbContext : DbContext
         // Use client-generated string ids (keep it drop-in compatible with the Angular app).
         foreach (var type in new[]
         {
-            typeof(Cliente), typeof(Vehiculo), typeof(Trabajo),
+            typeof(Cliente), typeof(Vehiculo), typeof(Empleado), typeof(Trabajo),
             typeof(TrabajoItem), typeof(PagoTrabajo), typeof(Caja), typeof(MovimientoCaja)
         })
         {
@@ -42,6 +43,11 @@ public class TallerGoDbContext : DbContext
             .HasForeignKey(v => v.ClienteId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        var empleado = modelBuilder.Entity<Empleado>();
+        empleado.HasKey(e => e.Id);
+        empleado.Property(e => e.Especialidad).HasConversion<string>().HasMaxLength(20);
+        empleado.Property(e => e.Estado).HasConversion<string>().HasMaxLength(20);
+
         var trabajo = modelBuilder.Entity<Trabajo>();
         trabajo.HasKey(t => t.Id);
         trabajo.Property(t => t.Estado).HasConversion<string>().HasMaxLength(30);
@@ -53,6 +59,10 @@ public class TallerGoDbContext : DbContext
             .WithMany()
             .HasForeignKey(t => t.ClienteId)
             .OnDelete(DeleteBehavior.Restrict);
+        trabajo.HasOne<Empleado>()
+            .WithMany()
+            .HasForeignKey(t => t.EmpleadoId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         var item = modelBuilder.Entity<TrabajoItem>();
         item.HasKey(i => i.Id);
