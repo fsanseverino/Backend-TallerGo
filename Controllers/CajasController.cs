@@ -102,6 +102,17 @@ public class CajasController : ControllerBase
         if (movimiento is null)
             return NotFound();
 
+        var caja = await db.Cajas.FindAsync(movimiento.CajaId);
+        if (caja is not null && caja.Estado == EstadoCaja.CERRADA)
+            return Conflict("No se puede eliminar movimientos de una caja cerrada.");
+
+        if (movimiento.Tipo == TipoMovimiento.INGRESO_TRABAJO && !string.IsNullOrWhiteSpace(movimiento.TrabajoId))
+        {
+            var pago = await db.PagosTrabajo.FirstOrDefaultAsync(p => p.MovimientoCajaId == movimiento.Id);
+            if (pago is not null)
+                pago.MovimientoCajaId = null;
+        }
+
         db.MovimientosCaja.Remove(movimiento);
         await db.SaveChangesAsync();
         return NoContent();

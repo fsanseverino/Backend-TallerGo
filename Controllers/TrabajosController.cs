@@ -142,20 +142,47 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpPost("{id}/pagos")]
-    public async Task<IActionResult> RegistrarPago(string id, PagoTrabajo pago)
+    public async Task<IActionResult> RegistrarPago(string id, RegistrarPagoRequest request)
     {
         var db = AppDb.Open();
         var trabajo = await db.Trabajos.FindAsync(id);
         if (trabajo is null)
             return NotFound();
 
-        if (string.IsNullOrWhiteSpace(pago.Id))
-            pago.Id = Guid.NewGuid().ToString();
-        pago.TrabajoId = id;
-
+        var pago = new PagoTrabajo
+        {
+            Id = Guid.NewGuid().ToString(),
+            TrabajoId = id,
+            Monto = request.Monto,
+            Fecha = request.Fecha == default ? DateTime.UtcNow : request.Fecha,
+        };
         db.PagosTrabajo.Add(pago);
+
+        MovimientoCaja? movimiento = null;
+        if (!string.IsNullOrWhiteSpace(request.CajaId))
+        {
+            var caja = await db.Cajas.FindAsync(request.CajaId);
+            if (caja is null)
+                return NotFound("Caja no encontrada.");
+            if (caja.Estado != EstadoCaja.ABIERTA)
+                return Conflict("No hay una caja abierta para registrar la operación.");
+
+            movimiento = new MovimientoCaja()
+            {
+                Id = Guid.NewGuid().ToString(),
+                CajaId = caja.Id,
+                Tipo = TipoMovimiento.INGRESO_TRABAJO,
+                Concepto = trabajo.Descripcion,
+                Monto = pago.Monto,
+                Fecha = pago.Fecha,
+                TrabajoId = id,
+            };
+            pago.MovimientoCajaId = movimiento.Id;
+            db.MovimientosCaja.Add(movimiento);
+        }
+
         await db.SaveChangesAsync();
-        return Ok(await Cargar(db, id));
+        return Ok(new { trabajo = await Cargar(db, id), movimiento });
     }
 
     [HttpDelete("{id}")]
