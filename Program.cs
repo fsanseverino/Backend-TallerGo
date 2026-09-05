@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Backend_TallerGo;
 using Backend_TallerGo.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,25 @@ app.UseCors(builder => builder
     .AllowAnyOrigin()
     .AllowAnyMethod()
     .AllowAnyHeader());
+
+// Auth mínima: los endpoints /api requieren Bearer token válido (24 hs), salvo /api/auth.
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value ?? "";
+    var esApi = path.StartsWith("/api", StringComparison.OrdinalIgnoreCase);
+    if (esApi && !path.StartsWith("/api/auth", StringComparison.OrdinalIgnoreCase))
+    {
+        var header = context.Request.Headers.Authorization.ToString();
+        var token = header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? header["Bearer ".Length..] : null;
+        if (!AuthToken.Validar(token))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsJsonAsync(new { mensaje = "Sesión inválida o expirada. Iniciá sesión nuevamente." });
+            return;
+        }
+    }
+    await next();
+});
 
 app.MapControllers();
 app.MapGet("/", () => new { nombre = "Backend-TallerGo API", salud = "ok" });
