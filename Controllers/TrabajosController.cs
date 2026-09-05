@@ -117,6 +117,7 @@ public class TrabajosController : ControllerBase
         trabajo.ClienteId = datos.ClienteId;
         trabajo.EmpleadoId = datos.EmpleadoId;
         trabajo.Descripcion = datos.Descripcion;
+        trabajo.KilometrajeIngreso = datos.KilometrajeIngreso;
         trabajo.FechaIngreso = datos.FechaIngreso;
         trabajo.FechaRealizacion = datos.FechaRealizacion;
         trabajo.Estado = datos.Estado;

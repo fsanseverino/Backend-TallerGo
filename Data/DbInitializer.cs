@@ -41,12 +41,12 @@ public class DbInitializer
 
         var trabajos = new[]
         {
-            Trabajo("tra-001", "veh-001", "cli-001", "emp-001", "Cambio de aceite y filtros", "2026-06-20", "2026-06-22", EstadoTrabajo.FINALIZADO, 25000, "Aceite sintético y filtro de aire."),
-            Trabajo("tra-002", "veh-002", "cli-002", "emp-002", "Reparación de frenos", "2026-07-05", "2026-07-07", EstadoTrabajo.FINALIZADO, 45000, "Pastillas y discos delanteros."),
-            Trabajo("tra-003", "veh-003", "cli-003", null, "Alineación y balanceo", "2026-07-10", "2026-07-10", EstadoTrabajo.FINALIZADO, 15000, ""),
-            Trabajo("tra-004", "veh-004", "cli-004", "emp-003", "Reparación de clutch", "2026-08-01", "2026-08-04", EstadoTrabajo.FINALIZADO, 80000, "Cambio completo de kit de embrague."),
-            Trabajo("tra-005", "veh-005", "cli-001", null, "Cambio de batería", "2026-08-20", null, EstadoTrabajo.SIN_INICIAR, 35000, "Batería nueva 70Ah."),
-            Trabajo("tra-006", "veh-001", "cli-001", "emp-001", "Diagnóstico de motor", "2026-08-25", null, EstadoTrabajo.EN_CURSO, 10000, "Pendiente de resultado de diagnóstico."),
+            Trabajo("tra-001", "veh-001", "cli-001", "emp-001", "Cambio de aceite y filtros", 48250, "2026-06-20", "2026-06-22", EstadoTrabajo.FINALIZADO, 25000, "Aceite sintético y filtro de aire."),
+            Trabajo("tra-002", "veh-002", "cli-002", "emp-002", "Reparación de frenos", 51000, "2026-07-05", "2026-07-07", EstadoTrabajo.FINALIZADO, 45000, "Pastillas y discos delanteros."),
+            Trabajo("tra-003", "veh-003", "cli-003", null, "Alineación y balanceo", 75300, "2026-07-10", "2026-07-10", EstadoTrabajo.FINALIZADO, 15000, ""),
+            Trabajo("tra-004", "veh-004", "cli-004", "emp-003", "Reparación de clutch", 68900, "2026-08-01", "2026-08-04", EstadoTrabajo.FINALIZADO, 80000, "Cambio completo de kit de embrague."),
+            Trabajo("tra-005", "veh-005", "cli-001", null, "Cambio de batería", 81200, "2026-08-20", null, EstadoTrabajo.SIN_INICIAR, 35000, "Batería nueva 70Ah."),
+            Trabajo("tra-006", "veh-001", "cli-001", "emp-001", "Diagnóstico de motor", 49750, "2026-08-25", null, EstadoTrabajo.EN_CURSO, 10000, "Pendiente de resultado de diagnóstico."),
         };
         db.Trabajos.AddRange(trabajos);
 
@@ -117,7 +117,7 @@ public class DbInitializer
             Chasis = chasis,
         };
 
-    private static Trabajo Trabajo(string id, string vehiculoId, string clienteId, string? empleadoId, string descripcion, string fechaIngreso, string? fechaRealizacion, EstadoTrabajo estado, decimal monto, string observaciones) =>
+    private static Trabajo Trabajo(string id, string vehiculoId, string clienteId, string? empleadoId, string descripcion, int? kilometrajeIngreso, string fechaIngreso, string? fechaRealizacion, EstadoTrabajo estado, decimal monto, string observaciones) =>
         new Trabajo()
         {
             Id = id,
@@ -125,6 +125,7 @@ public class DbInitializer
             ClienteId = clienteId,
             EmpleadoId = empleadoId,
             Descripcion = descripcion,
+            KilometrajeIngreso = kilometrajeIngreso,
             FechaIngreso = ParseDate(fechaIngreso),
             FechaRealizacion = fechaRealizacion,
             Estado = estado,

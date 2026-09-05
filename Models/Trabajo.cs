@@ -21,6 +21,7 @@ public class Trabajo
     public string ClienteId { get; set; } = string.Empty;
     public string? EmpleadoId { get; set; }
     public string Descripcion { get; set; } = string.Empty;
+    public int? KilometrajeIngreso { get; set; }
     public DateTime FechaIngreso { get; set; }
     public string? FechaRealizacion { get; set; }
     public EstadoTrabajo Estado { get; set; } = EstadoTrabajo.SIN_INICIAR;
