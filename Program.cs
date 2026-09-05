@@ -24,11 +24,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// CORS: permitir el servidor de desarrollo de Angular.
+// CORS: habilitado para cualquier origin/método (solo desarrollo, sin auth ni cookies).
 app.UseCors(builder => builder
-    .WithOrigins("http://localhost:4200", "http://localhost:4301", "http://127.0.0.1:4200")
-    .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-    .AllowCredentials());
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
 
 app.MapControllers();
 app.MapGet("/", () => new { nombre = "Backend-TallerGo API", salud = "ok" });
