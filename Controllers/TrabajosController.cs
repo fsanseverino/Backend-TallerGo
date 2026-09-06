@@ -84,8 +84,23 @@ public class TrabajosController : ControllerBase
     public async Task<IActionResult> Create(Trabajo trabajo)
     {
         var db = AppDb.Open();
-        if (string.IsNullOrWhiteSpace(trabajo.Id))
+
+        var prefijo = await db.Configuraciones.FirstOrDefaultAsync(c => c.Clave == "trabajos.prefijo");
+        if (prefijo != null && !string.IsNullOrWhiteSpace(prefijo.Valor))
+        {
+            var siguiente = await db.Configuraciones.FirstOrDefaultAsync(c => c.Clave == "trabajos.siguiente");
+            var numero = int.TryParse(siguiente?.Valor, out var n) ? n : 1;
+            trabajo.Id = prefijo.Valor.Trim() + numero.ToString("D4");
+            if (siguiente != null)
+            {
+                siguiente.Valor = (numero + 1).ToString();
+                siguiente.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+        else if (string.IsNullOrWhiteSpace(trabajo.Id))
+        {
             trabajo.Id = Guid.NewGuid().ToString();
+        }
 
         foreach (var item in trabajo.Items)
         {

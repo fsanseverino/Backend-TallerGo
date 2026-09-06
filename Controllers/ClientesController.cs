@@ -55,7 +55,7 @@ public class ClientesController : ControllerBase
         cliente.Direccion = datos.Direccion;
 
         await db.SaveChangesAsync();
-        return NoContent();
+        return Ok(cliente);
     }
 
     [HttpDelete("{id}")]

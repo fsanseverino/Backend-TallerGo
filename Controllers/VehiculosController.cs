@@ -58,9 +58,11 @@ public class VehiculosController : ControllerBase
         vehiculo.Patente = datos.Patente;
         vehiculo.Color = datos.Color;
         vehiculo.Chasis = datos.Chasis;
+        vehiculo.NumeroMotor = datos.NumeroMotor;
+        vehiculo.TipoMotor = datos.TipoMotor;
 
         await db.SaveChangesAsync();
-        return NoContent();
+        return Ok(vehiculo);
     }
 
     [HttpDelete("{id}")]

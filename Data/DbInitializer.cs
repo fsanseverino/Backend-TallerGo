@@ -9,6 +9,21 @@ public class DbInitializer
 
     public static void Seed(TallerGoDbContext db)
     {
+        if (db.Configuraciones.Count() == 0)
+        {
+            var ahora = DateTime.UtcNow;
+            db.Configuraciones.AddRange(
+                Config("cfg-nombre", "taller.nombre", "", "taller", ahora),
+                Config("cfg-direccion", "taller.direccion", "", "taller", ahora),
+                Config("cfg-telefono", "taller.telefono", "", "taller", ahora),
+                Config("cfg-email", "taller.email", "", "taller", ahora),
+                Config("cfg-cuit", "taller.cuit", "", "taller", ahora),
+                Config("cfg-prefijo", "trabajos.prefijo", "T-", "trabajos", ahora),
+                Config("cfg-siguiente", "trabajos.siguiente", "1", "trabajos", ahora)
+            );
+            db.SaveChanges();
+        }
+
         if (db.Clientes.Count() > 0)
             return;
 
@@ -31,11 +46,11 @@ public class DbInitializer
 
         var vehiculos = new[]
         {
-            Vehiculo("veh-001", "cli-001", "Toyota", "Corolla", 2020, "AB123CD", "Gris", "8X1AB12C345678901"),
-            Vehiculo("veh-002", "cli-002", "Volkswagen", "Gol Trend", 2018, "AC456EF", "Blanco", "8AWG1123GHJ56789"),
-            Vehiculo("veh-003", "cli-003", "Ford", "Fiesta KD", 2019, "AD789GH", "Azul", "8AAPK123KL901234"),
-            Vehiculo("veh-004", "cli-004", "Renault", "Kangoo", 2021, "AE012IJ", "Negro", "8AIRE456MN345678"),
-            Vehiculo("veh-005", "cli-001", "Fiat", "Uno", 2016, "AF345KL", "Rojo", "8AFIA789OP567890"),
+            Vehiculo("veh-001", "cli-001", "Toyota", "Corolla", 2020, "AB123CD", "Gris", "8X1AB12C345678901", "2ZR-FE", TipoMotor.NAFTA),
+            Vehiculo("veh-002", "cli-002", "Volkswagen", "Gol Trend", 2018, "AC456EF", "Blanco", "8AWG1123GHJ56789", "1.6 MSI", TipoMotor.NAFTA),
+            Vehiculo("veh-003", "cli-003", "Ford", "Fiesta KD", 2019, "AD789GH", "Azul", "8AAPK123KL901234", "1.6 Ti-VCT", TipoMotor.NAFTA),
+            Vehiculo("veh-004", "cli-004", "Renault", "Kangoo", 2021, "AE012IJ", "Negro", "8AIRE456MN345678", "K9K 656", TipoMotor.DIESEL),
+            Vehiculo("veh-005", "cli-001", "Fiat", "Uno", 2016, "AF345KL", "Rojo", "8AFIA789OP567890", "Fire 1.3", TipoMotor.NAFTA),
         };
         db.Vehiculos.AddRange(vehiculos);
 
@@ -104,7 +119,7 @@ public class DbInitializer
             CreatedAt = ParseDate(fechaIngreso),
         };
 
-    private static Vehiculo Vehiculo(string id, string clienteId, string marca, string modelo, int anio, string patente, string color, string chasis) =>
+    private static Vehiculo Vehiculo(string id, string clienteId, string marca, string modelo, int anio, string patente, string color, string chasis, string numeroMotor, TipoMotor tipoMotor) =>
         new Vehiculo()
         {
             Id = id,
@@ -115,6 +130,8 @@ public class DbInitializer
             Patente = patente,
             Color = color,
             Chasis = chasis,
+            NumeroMotor = numeroMotor,
+            TipoMotor = tipoMotor,
         };
 
     private static Trabajo Trabajo(string id, string vehiculoId, string clienteId, string? empleadoId, string descripcion, int? kilometrajeIngreso, string fechaIngreso, string? fechaRealizacion, EstadoTrabajo estado, decimal monto, string observaciones) =>
@@ -156,6 +173,16 @@ public class DbInitializer
             Fecha = ParseDate(fecha),
         });
     }
+
+    private static Configuracion Config(string id, string clave, string valor, string categoria, DateTime updatedAt) =>
+        new Configuracion()
+        {
+            Id = id,
+            Clave = clave,
+            Valor = valor,
+            Categoria = categoria,
+            UpdatedAt = updatedAt,
+        };
 
     private static void SeedCaja(TallerGoDbContext db)
     {

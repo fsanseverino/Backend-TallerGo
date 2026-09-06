@@ -56,7 +56,7 @@ public class EmpleadosController : ControllerBase
         empleado.Estado = datos.Estado;
 
         await db.SaveChangesAsync();
-        return NoContent();
+        return Ok(empleado);
     }
 
     [HttpDelete("{id}")]

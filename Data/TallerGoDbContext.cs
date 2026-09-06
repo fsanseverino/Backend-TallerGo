@@ -18,6 +18,7 @@ public class TallerGoDbContext : DbContext
     public DbSet<PagoTrabajo> PagosTrabajo => Set<PagoTrabajo>();
     public DbSet<Caja> Cajas => Set<Caja>();
     public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
+    public DbSet<Configuracion> Configuraciones => Set<Configuracion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,7 +26,8 @@ public class TallerGoDbContext : DbContext
         foreach (var type in new[]
         {
             typeof(Cliente), typeof(Vehiculo), typeof(Empleado), typeof(Trabajo),
-            typeof(TrabajoItem), typeof(PagoTrabajo), typeof(Caja), typeof(MovimientoCaja)
+            typeof(TrabajoItem), typeof(PagoTrabajo), typeof(Caja), typeof(MovimientoCaja),
+            typeof(Configuracion)
         })
         {
             modelBuilder.Entity(type).Property("Id").ValueGeneratedNever();
@@ -38,6 +40,7 @@ public class TallerGoDbContext : DbContext
 
         var vehiculo = modelBuilder.Entity<Vehiculo>();
         vehiculo.HasKey(v => v.Id);
+        vehiculo.Property(v => v.TipoMotor).HasConversion<string>().HasMaxLength(20);
         vehiculo.HasOne<Cliente>()
             .WithMany()
             .HasForeignKey(v => v.ClienteId)
@@ -90,5 +93,11 @@ public class TallerGoDbContext : DbContext
             .WithMany()
             .HasForeignKey(m => m.CajaId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        var config = modelBuilder.Entity<Configuracion>();
+        config.HasKey(c => c.Id);
+        config.HasIndex(c => c.Clave).IsUnique();
+        config.Property(c => c.Clave).HasMaxLength(100);
+        config.Property(c => c.Categoria).HasMaxLength(50);
     }
 }
