@@ -75,7 +75,7 @@ public class TallerGoDbContext : DbContext
         var pago = modelBuilder.Entity<PagoTrabajo>();
         pago.HasKey(p => p.Id);
         pago.HasOne<Trabajo>()
-            .WithMany()
+            .WithMany(t => t.Pagos)
             .HasForeignKey(p => p.TrabajoId)
             .OnDelete(DeleteBehavior.Cascade);
 
