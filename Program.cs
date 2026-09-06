@@ -31,6 +31,10 @@ app.UseCors(builder => builder
     .AllowAnyMethod()
     .AllowAnyHeader());
 
+// Servir el frontend Angular compilado (wwwroot) en el mismo host.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Auth mínima: los endpoints /api requieren Bearer token válido (24 hs), salvo /api/auth.
 app.Use(async (context, next) =>
 {
@@ -51,6 +55,8 @@ app.Use(async (context, next) =>
 });
 
 app.MapControllers();
-app.MapGet("/", () => new { nombre = "Backend-TallerGo API", salud = "ok" });
+
+// SPA routing: cualquier ruta que no sea /api o archivo, devuelve index.html.
+app.MapFallbackToFile("index.html");
 
 app.Run();

@@ -62,4 +62,7 @@ nunit-*.xml
 *.db-wal
 *.sqlite
 
+# Frontend compilado (se genera con ng build → copiar a wwwroot)
+wwwroot/
+
 
