@@ -31,7 +31,7 @@ public class ClientesController : ControllerBase
         if (string.IsNullOrWhiteSpace(cliente.Id))
             cliente.Id = Guid.NewGuid().ToString();
         if (cliente.CreatedAt == null)
-            cliente.CreatedAt = DateTime.UtcNow;
+            cliente.CreatedAt = DateTime.Now;
 
         db.Clientes.Add(cliente);
         await db.SaveChangesAsync();

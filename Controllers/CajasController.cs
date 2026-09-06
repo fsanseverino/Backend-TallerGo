@@ -51,7 +51,7 @@ public class CajasController : ControllerBase
         if (string.IsNullOrWhiteSpace(caja.Id))
             caja.Id = Guid.NewGuid().ToString();
         if (caja.FechaApertura == default)
-            caja.FechaApertura = DateTime.UtcNow;
+            caja.FechaApertura = DateTime.Now;
         caja.Estado = EstadoCaja.ABIERTA;
         db.Cajas.Add(caja);
         await db.SaveChangesAsync();
@@ -69,7 +69,7 @@ public class CajasController : ControllerBase
             return Conflict("La caja ya está cerrada.");
 
         caja.Estado = EstadoCaja.CERRADA;
-        caja.FechaCierre = DateTime.UtcNow;
+        caja.FechaCierre = DateTime.Now;
         await db.SaveChangesAsync();
         return NoContent();
     }
@@ -88,7 +88,7 @@ public class CajasController : ControllerBase
             movimiento.Id = Guid.NewGuid().ToString();
         movimiento.CajaId = id;
         if (movimiento.Fecha == default)
-            movimiento.Fecha = DateTime.UtcNow;
+            movimiento.Fecha = DateTime.Now;
         db.MovimientosCaja.Add(movimiento);
         await db.SaveChangesAsync();
         return Ok(movimiento);

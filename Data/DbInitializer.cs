@@ -11,7 +11,7 @@ public class DbInitializer
     {
         if (db.Configuraciones.Count() == 0)
         {
-            var ahora = DateTime.UtcNow;
+            var ahora = DateTime.Now;
             db.Configuraciones.AddRange(
                 Config("cfg-nombre", "taller.nombre", "", "taller", ahora),
                 Config("cfg-direccion", "taller.direccion", "", "taller", ahora),

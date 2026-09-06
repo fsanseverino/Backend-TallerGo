@@ -24,7 +24,7 @@ public class ConfiguracionesController : ControllerBase
     public async Task<IActionResult> Upsert([FromBody] List<ConfiguracionUpdate> entradas)
     {
         var db = AppDb.Open();
-        var ahora = DateTime.UtcNow;
+        var ahora = DateTime.Now;
         foreach (var entrada in entradas)
         {
             if (string.IsNullOrWhiteSpace(entrada.Clave))

@@ -31,7 +31,7 @@ public class EmpleadosController : ControllerBase
         if (string.IsNullOrWhiteSpace(empleado.Id))
             empleado.Id = Guid.NewGuid().ToString();
         if (empleado.CreatedAt == null)
-            empleado.CreatedAt = DateTime.UtcNow;
+            empleado.CreatedAt = DateTime.Now;
 
         db.Empleados.Add(empleado);
         await db.SaveChangesAsync();

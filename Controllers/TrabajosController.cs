@@ -51,6 +51,35 @@ public class TrabajosController : ControllerBase
         return trabajos;
     }
 
+    private static async Task VincularPagosACajaAbierta(TallerGoDbContext db, Trabajo trabajo)
+    {
+        var cajaAbierta = await db.Cajas
+            .AsNoTracking()
+            .Where(c => c.Estado == EstadoCaja.ABIERTA)
+            .OrderByDescending(c => c.FechaApertura)
+            .FirstOrDefaultAsync();
+        if (cajaAbierta is null)
+            return;
+
+        foreach (var pago in trabajo.Pagos.Where(p => string.IsNullOrWhiteSpace(p.MovimientoCajaId)))
+        {
+            var movimiento = new MovimientoCaja
+            {
+                Id = Guid.NewGuid().ToString(),
+                CajaId = cajaAbierta.Id,
+                Tipo = TipoMovimiento.INGRESO_TRABAJO,
+                Concepto = trabajo.Descripcion,
+                Monto = pago.Monto,
+                Fecha = DateTime.Now,
+                TrabajoId = trabajo.Id,
+            };
+            pago.MovimientoCajaId = movimiento.Id;
+            db.MovimientosCaja.Add(movimiento);
+        }
+
+        await db.SaveChangesAsync();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -117,6 +146,7 @@ public class TrabajosController : ControllerBase
 
         db.Trabajos.Add(trabajo);
         await db.SaveChangesAsync();
+        await VincularPagosACajaAbierta(db, trabajo);
         return CreatedAtAction(nameof(GetById), new { id = trabajo.Id }, await Cargar(db, trabajo.Id));
     }
 
@@ -139,7 +169,7 @@ public class TrabajosController : ControllerBase
         trabajo.Monto = datos.Monto;
         trabajo.Observaciones = datos.Observaciones;
 
-        // Reemplazar los ítems (los pagos se gestionan por separado).
+        // Reemplazar los ítems y sincronizar los pagos con la caja abierta.
         var viejos = await db.TrabajoItems.AsNoTracking().Where(i => i.TrabajoId == id).ToListAsync();
         foreach (var v in viejos)
             db.TrabajoItems.Remove(v);
@@ -152,7 +182,30 @@ public class TrabajosController : ControllerBase
             db.TrabajoItems.Add(item);
         }
 
+        var pagosActuales = await db.PagosTrabajo.Where(p => p.TrabajoId == id).ToListAsync();
+        var idsRecibidos = new HashSet<string>(datos.Pagos.Select(p => p.Id).Where(i => !string.IsNullOrWhiteSpace(i)));
+        foreach (var pagoExistente in pagosActuales.Where(p => !idsRecibidos.Contains(p.Id)))
+            db.PagosTrabajo.Remove(pagoExistente);
+
+        foreach (var pago in datos.Pagos)
+        {
+            if (string.IsNullOrWhiteSpace(pago.Id))
+                pago.Id = Guid.NewGuid().ToString();
+            var actual = pagosActuales.FirstOrDefault(p => p.Id == pago.Id);
+            if (actual is not null)
+            {
+                actual.Monto = pago.Monto;
+                actual.Fecha = pago.Fecha;
+            }
+            else
+            {
+                pago.TrabajoId = id;
+                db.PagosTrabajo.Add(pago);
+            }
+        }
+
         await db.SaveChangesAsync();
+        await VincularPagosACajaAbierta(db, trabajo);
         return Ok(await Cargar(db, id));
     }
 
@@ -169,7 +222,7 @@ public class TrabajosController : ControllerBase
             Id = Guid.NewGuid().ToString(),
             TrabajoId = id,
             Monto = request.Monto,
-            Fecha = request.Fecha == default ? DateTime.UtcNow : request.Fecha,
+            Fecha = request.Fecha == default ? DateTime.Now : request.Fecha,
         };
         db.PagosTrabajo.Add(pago);
 
@@ -189,7 +242,7 @@ public class TrabajosController : ControllerBase
                 Tipo = TipoMovimiento.INGRESO_TRABAJO,
                 Concepto = trabajo.Descripcion,
                 Monto = pago.Monto,
-                Fecha = pago.Fecha,
+                Fecha = DateTime.Now,
                 TrabajoId = id,
             };
             pago.MovimientoCajaId = movimiento.Id;
