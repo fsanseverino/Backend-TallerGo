@@ -24,6 +24,12 @@ public class DbInitializer
             db.SaveChanges();
         }
 
+        if (db.Catalogos.Count() == 0)
+        {
+            SeedCatalogoMarcas(db);
+            db.SaveChanges();
+        }
+
         if (db.Clientes.Count() > 0)
             return;
 
@@ -197,6 +203,39 @@ public class DbInitializer
             Mov("mov-004", "caja-002", TipoMovimiento.INGRESO, "Aporte de fondos", 20000, "2026-08-15T14:00:00Z", null),
             Mov("mov-005", "caja-002", TipoMovimiento.EGRESO, "Pago a proveedor", 15000, "2026-08-15T16:00:00Z", null)
         );
+    }
+
+    private static void SeedCatalogoMarcas(TallerGoDbContext db)
+    {
+        var catalogo = new Catalogo
+        {
+            Id = "cat-marcas",
+            Nombre = "Marcas de autos",
+            Clave = "marcas",
+            Descripcion = "Marcas de vehículos disponibles en el sistema",
+        };
+        db.Catalogos.Add(catalogo);
+
+        var marcas = new[]
+        {
+            "Audi", "BMW", "BYD", "Chery", "Chevrolet", "Citroën",
+            "Fiat", "Ford", "GAC", "Great Wall", "Honda", "Hyundai",
+            "Jeep", "Kia", "Mercedes-Benz", "Mitsubishi", "Nissan",
+            "Peugeot", "Renault", "Subaru", "Suzuki", "Toyota",
+            "Volkswagen", "Volvo",
+        };
+        var orden = 1;
+        foreach (var marca in marcas)
+        {
+            db.CatalogoValores.Add(new CatalogoValor
+            {
+                Id = $"catval-{orden:D3}",
+                CatalogoId = catalogo.Id,
+                Valor = marca,
+                Orden = orden,
+            });
+            orden++;
+        }
     }
 
     private static MovimientoCaja Mov(string id, string cajaId, TipoMovimiento tipo, string concepto, decimal monto, string fecha, string? trabajoId) =>

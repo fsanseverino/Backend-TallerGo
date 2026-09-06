@@ -19,6 +19,8 @@ public class TallerGoDbContext : DbContext
     public DbSet<Caja> Cajas => Set<Caja>();
     public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
     public DbSet<Configuracion> Configuraciones => Set<Configuracion>();
+    public DbSet<Catalogo> Catalogos => Set<Catalogo>();
+    public DbSet<CatalogoValor> CatalogoValores => Set<CatalogoValor>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,7 +29,7 @@ public class TallerGoDbContext : DbContext
         {
             typeof(Cliente), typeof(Vehiculo), typeof(Empleado), typeof(Trabajo),
             typeof(TrabajoItem), typeof(PagoTrabajo), typeof(Caja), typeof(MovimientoCaja),
-            typeof(Configuracion)
+            typeof(Configuracion), typeof(Catalogo), typeof(CatalogoValor)
         })
         {
             modelBuilder.Entity(type).Property("Id").ValueGeneratedNever();
@@ -99,5 +101,19 @@ public class TallerGoDbContext : DbContext
         config.HasIndex(c => c.Clave).IsUnique();
         config.Property(c => c.Clave).HasMaxLength(100);
         config.Property(c => c.Categoria).HasMaxLength(50);
+
+        var cat = modelBuilder.Entity<Catalogo>();
+        cat.HasKey(c => c.Id);
+        cat.HasIndex(c => c.Clave).IsUnique();
+        cat.Property(c => c.Nombre).HasMaxLength(100);
+        cat.Property(c => c.Clave).HasMaxLength(50);
+
+        var catVal = modelBuilder.Entity<CatalogoValor>();
+        catVal.HasKey(v => v.Id);
+        catVal.HasOne<Catalogo>()
+            .WithMany()
+            .HasForeignKey(v => v.CatalogoId)
+            .OnDelete(DeleteBehavior.Cascade);
+        catVal.Property(v => v.Valor).HasMaxLength(200);
     }
 }
