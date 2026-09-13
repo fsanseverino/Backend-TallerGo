@@ -1,4 +1,4 @@
-using Backend_TallerGo.Data;
+﻿using Backend_TallerGo.Data;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +10,30 @@ public static class EsquemaSeguro
 {
     public static void Verificar(TallerGoDbContext db)
     {
-        // Columna nueva en la tabla existente Trabajos.
+        // Columnas nuevas en la tabla existente Trabajos.
         if (!ExisteColumna(db, "Trabajos", "FechaEntrega"))
         {
             Ejecutar(db, "ALTER TABLE Trabajos ADD COLUMN FechaEntrega TEXT NULL");
+
+                    if (!ExisteColumna(db, "Trabajos", "RepuestoId"))
+                    {
+                        Ejecutar(db, "ALTER TABLE Trabajos ADD COLUMN RepuestoId TEXT NULL");
+                    }
+
+                    if (!ExisteColumna(db, "Trabajos", "PresupuestoId"))
+                    {
+                        Ejecutar(db, "ALTER TABLE Trabajos ADD COLUMN PresupuestoId TEXT NULL");
+                    }
+        }
+
+        if (!ExisteColumna(db, "Trabajos", "RepuestoId"))
+        {
+            Ejecutar(db, "ALTER TABLE Trabajos ADD COLUMN RepuestoId TEXT NULL");
+        }
+
+        if (!ExisteColumna(db, "Trabajos", "PresupuestoId"))
+        {
+            Ejecutar(db, "ALTER TABLE Trabajos ADD COLUMN PresupuestoId TEXT NULL");
         }
 
         var sentencias = new[]

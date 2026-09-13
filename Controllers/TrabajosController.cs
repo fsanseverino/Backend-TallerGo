@@ -188,9 +188,9 @@ public class TrabajosController : ControllerBase
         if (trabajo is null)
             return NotFound();
 
-        trabajo.VehiculoId = datos.VehiculoId;
-        trabajo.ClienteId = datos.ClienteId;
-        trabajo.EmpleadoId = datos.EmpleadoId;
+        if (!string.IsNullOrWhiteSpace(datos.VehiculoId)) trabajo.VehiculoId = datos.VehiculoId;
+        if (!string.IsNullOrWhiteSpace(datos.ClienteId)) trabajo.ClienteId = datos.ClienteId;
+        trabajo.EmpleadoId = string.IsNullOrWhiteSpace(datos.EmpleadoId) ? null : datos.EmpleadoId;
         trabajo.Descripcion = datos.Descripcion;
         trabajo.KilometrajeIngreso = datos.KilometrajeIngreso;
         trabajo.FechaIngreso = datos.FechaIngreso;

@@ -78,7 +78,7 @@ public class TallerGoDbContext : DbContext
         item.HasKey(i => i.Id);
         item.Property(i => i.Tipo).HasConversion<string>().HasMaxLength(20);
         item.HasOne<Trabajo>()
-            .WithMany()
+            .WithMany(t => t.Items)
             .HasForeignKey(i => i.TrabajoId)
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -141,7 +141,7 @@ public class TallerGoDbContext : DbContext
         presupuestoItem.HasKey(i => i.Id);
         presupuestoItem.Property(i => i.Tipo).HasConversion<string>().HasMaxLength(20);
         presupuestoItem.HasOne<Presupuesto>()
-            .WithMany()
+            .WithMany(p => p.Items)
             .HasForeignKey(i => i.PresupuestoId)
             .OnDelete(DeleteBehavior.Cascade);
     }
