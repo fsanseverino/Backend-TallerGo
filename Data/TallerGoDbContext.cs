@@ -21,6 +21,10 @@ public class TallerGoDbContext : DbContext
     public DbSet<Configuracion> Configuraciones => Set<Configuracion>();
     public DbSet<Catalogo> Catalogos => Set<Catalogo>();
     public DbSet<CatalogoValor> CatalogoValores => Set<CatalogoValor>();
+    public DbSet<Repuesto> Repuestos => Set<Repuesto>();
+    public DbSet<Turno> Turnos => Set<Turno>();
+    public DbSet<Presupuesto> Presupuestos => Set<Presupuesto>();
+    public DbSet<PresupuestoItem> PresupuestoItems => Set<PresupuestoItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,7 +33,8 @@ public class TallerGoDbContext : DbContext
         {
             typeof(Cliente), typeof(Vehiculo), typeof(Empleado), typeof(Trabajo),
             typeof(TrabajoItem), typeof(PagoTrabajo), typeof(Caja), typeof(MovimientoCaja),
-            typeof(Configuracion), typeof(Catalogo), typeof(CatalogoValor)
+            typeof(Configuracion), typeof(Catalogo), typeof(CatalogoValor),
+            typeof(Repuesto), typeof(Turno), typeof(Presupuesto), typeof(PresupuestoItem)
         })
         {
             modelBuilder.Entity(type).Property("Id").ValueGeneratedNever();
@@ -115,5 +120,29 @@ public class TallerGoDbContext : DbContext
             .HasForeignKey(v => v.CatalogoId)
             .OnDelete(DeleteBehavior.Cascade);
         catVal.Property(v => v.Valor).HasMaxLength(200);
+
+        var repuesto = modelBuilder.Entity<Repuesto>();
+        repuesto.HasKey(r => r.Id);
+        repuesto.Property(r => r.Codigo).HasMaxLength(50);
+        repuesto.Property(r => r.Categoria).HasMaxLength(50);
+
+        var turno = modelBuilder.Entity<Turno>();
+        turno.HasKey(t => t.Id);
+        turno.Property(t => t.Estado).HasConversion<string>().HasMaxLength(30);
+        turno.Property(t => t.Fecha).HasMaxLength(10);
+        turno.Property(t => t.Hora).HasMaxLength(5);
+
+        var presupuesto = modelBuilder.Entity<Presupuesto>();
+        presupuesto.HasKey(p => p.Id);
+        presupuesto.Property(p => p.Estado).HasConversion<string>().HasMaxLength(30);
+        presupuesto.Property(p => p.Fecha).HasMaxLength(10);
+
+        var presupuestoItem = modelBuilder.Entity<PresupuestoItem>();
+        presupuestoItem.HasKey(i => i.Id);
+        presupuestoItem.Property(i => i.Tipo).HasConversion<string>().HasMaxLength(20);
+        presupuestoItem.HasOne<Presupuesto>()
+            .WithMany()
+            .HasForeignKey(i => i.PresupuestoId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

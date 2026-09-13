@@ -15,6 +15,7 @@ public class AppDb
                 .Options
         );
         db.Database.EnsureCreated();
+        EsquemaSeguro.Verificar(db);
         DbInitializer.Seed(db);
         return db;
     }

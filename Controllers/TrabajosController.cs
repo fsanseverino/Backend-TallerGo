@@ -80,6 +80,33 @@ public class TrabajosController : ControllerBase
         await db.SaveChangesAsync();
     }
 
+    // Ajusta el stock de repuestos según los ítems consumidos (signo: +devuelve, -consume).
+    private static async Task AjustarStock(TallerGoDbContext db, List<TrabajoItem> anteriores, List<TrabajoItem> actuales)
+    {
+        var deltas = new Dictionary<string, int>();
+        void Acumular(IEnumerable<TrabajoItem> items, int signo)
+        {
+            foreach (var item in items)
+            {
+                if (string.IsNullOrWhiteSpace(item.RepuestoId) || item.Tipo != TipoItem.REPUESTO)
+                    continue;
+                var cantidad = item.Cantidad > 0 ? (int)Math.Round(item.Cantidad) : 1;
+                var id = item.RepuestoId!;
+                deltas[id] = deltas.GetValueOrDefault(id) + signo * cantidad;
+            }
+        }
+        Acumular(anteriores, +1);
+        Acumular(actuales, -1);
+        if (deltas.Count == 0)
+            return;
+
+        var ids = deltas.Keys.ToList();
+        var repuestos = await db.Repuestos.Where(r => ids.Contains(r.Id)).ToListAsync();
+        foreach (var r in repuestos)
+            r.Stock = Math.Max(0, r.Stock + deltas.GetValueOrDefault(r.Id, 0));
+        await db.SaveChangesAsync();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -137,6 +164,8 @@ public class TrabajosController : ControllerBase
                 item.Id = Guid.NewGuid().ToString();
             item.TrabajoId = trabajo.Id;
         }
+        await db.SaveChangesAsync();
+
         foreach (var pago in trabajo.Pagos)
         {
             if (string.IsNullOrWhiteSpace(pago.Id))
@@ -146,6 +175,7 @@ public class TrabajosController : ControllerBase
 
         db.Trabajos.Add(trabajo);
         await db.SaveChangesAsync();
+        await AjustarStock(db, new List<TrabajoItem>(), trabajo.Items);
         await VincularPagosACajaAbierta(db, trabajo);
         return CreatedAtAction(nameof(GetById), new { id = trabajo.Id }, await Cargar(db, trabajo.Id));
     }
@@ -165,9 +195,16 @@ public class TrabajosController : ControllerBase
         trabajo.KilometrajeIngreso = datos.KilometrajeIngreso;
         trabajo.FechaIngreso = datos.FechaIngreso;
         trabajo.FechaRealizacion = datos.FechaRealizacion;
+        trabajo.FechaEntrega = datos.FechaEntrega;
         trabajo.Estado = datos.Estado;
         trabajo.Monto = datos.Monto;
         trabajo.Observaciones = datos.Observaciones;
+
+        // Si se marca como ENTREGADO sin fecha, se registra la de hoy.
+        if (trabajo.Estado == EstadoTrabajo.ENTREGADO && string.IsNullOrWhiteSpace(trabajo.FechaEntrega))
+        {
+            trabajo.FechaEntrega = DateTime.Now.ToString("yyyy-MM-dd");
+        }
 
         // Reemplazar los ítems y sincronizar los pagos con la caja abierta.
         var viejos = await db.TrabajoItems.AsNoTracking().Where(i => i.TrabajoId == id).ToListAsync();
@@ -205,6 +242,7 @@ public class TrabajosController : ControllerBase
         }
 
         await db.SaveChangesAsync();
+        await AjustarStock(db, viejos, datos.Items);
         await VincularPagosACajaAbierta(db, trabajo);
         return Ok(await Cargar(db, id));
     }
@@ -260,6 +298,10 @@ public class TrabajosController : ControllerBase
         var trabajo = await db.Trabajos.FindAsync(id);
         if (trabajo is null)
             return NotFound();
+
+        // Devolver al stock los repuestos consumidos.
+        var items = await db.TrabajoItems.AsNoTracking().Where(i => i.TrabajoId == id).ToListAsync();
+        await AjustarStock(db, items, new List<TrabajoItem>());
 
         db.Trabajos.Remove(trabajo);
         await db.SaveChangesAsync();
