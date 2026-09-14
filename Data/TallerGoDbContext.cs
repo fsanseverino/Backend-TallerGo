@@ -73,6 +73,10 @@ public class TallerGoDbContext : DbContext
             .WithMany()
             .HasForeignKey(t => t.EmpleadoId)
             .OnDelete(DeleteBehavior.SetNull);
+        trabajo.HasOne<Presupuesto>()
+            .WithMany()
+            .HasForeignKey(t => t.PresupuestoId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         var item = modelBuilder.Entity<TrabajoItem>();
         item.HasKey(i => i.Id);

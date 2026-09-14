@@ -30,6 +30,7 @@ public class Trabajo
     public EstadoTrabajo Estado { get; set; } = EstadoTrabajo.SIN_INICIAR;
     public decimal Monto { get; set; }
     public string Observaciones { get; set; } = string.Empty;
+    public string? PresupuestoId { get; set; }
     public List<TrabajoItem> Items { get; set; } = new();
     public List<PagoTrabajo> Pagos { get; set; } = new();
 }

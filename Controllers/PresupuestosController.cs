@@ -137,7 +137,7 @@ public class PresupuestosController : ControllerBase
         if (presupuesto.Estado == EstadoPresupuesto.CONVERTIDO)
             return Conflict("El presupuesto ya fue convertido en una orden de trabajo.");
 
-        presupuesto.Items = await db.PresupuestoItems.AsNoTracking().Where(i => i.PresupuestoId == id).ToListAsync();
+        var items = await db.PresupuestoItems.AsNoTracking().Where(i => i.PresupuestoId == id).ToListAsync();
 
         var trabajo = new Trabajo
         {
@@ -148,6 +148,7 @@ public class PresupuestosController : ControllerBase
             FechaIngreso = DateTime.Now,
             Estado = EstadoTrabajo.SIN_INICIAR,
             Monto = presupuesto.Monto,
+            PresupuestoId = presupuesto.Id,
             Observaciones = $"Presupuesto {presupuesto.Id}." + (string.IsNullOrWhiteSpace(presupuesto.Observaciones) ? "" : " " + presupuesto.Observaciones),
         };
 
@@ -169,7 +170,7 @@ public class PresupuestosController : ControllerBase
             trabajo.Id = Guid.NewGuid().ToString();
         }
 
-        foreach (var item in presupuesto.Items)
+        foreach (var item in items)
         {
             trabajo.Items.Add(new TrabajoItem
             {
