@@ -44,12 +44,14 @@ app.Use(async (context, next) =>
     {
         var header = context.Request.Headers.Authorization.ToString();
         var token = header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? header["Bearer ".Length..] : null;
-        if (!AuthToken.Validar(token))
+        var sesion = AuthToken.Decodificar(token);
+        if (sesion is null)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsJsonAsync(new { mensaje = "Sesión inválida o expirada. Iniciá sesión nuevamente." });
             return;
         }
+        context.Items[AuthToken.CLAVE_SESION] = sesion;
     }
     await next();
 });

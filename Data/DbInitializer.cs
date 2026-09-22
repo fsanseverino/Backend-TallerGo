@@ -1,5 +1,6 @@
 using Backend_TallerGo.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Backend_TallerGo.Data;
 
@@ -27,6 +28,32 @@ public class DbInitializer
         if (db.Catalogos.Count() == 0)
         {
             SeedCatalogoMarcas(db);
+            db.SaveChanges();
+        }
+
+        if (db.Roles.Count() == 0)
+        {
+            db.Roles.AddRange(
+                Rol("rol-admin", "ADMIN", "Administrador general (dueño del sistema). Acceso completo.", PermisosCatalog.Todos),
+                Rol("rol-encargado", "ENCARGADO", "Mostrador: clientes, OT, presupuestos, agenda, caja y reportes.", PermisosCatalog.DefaultEncargado),
+                Rol("rol-operador", "OPERADOR", "Taller: ve y actualiza los trabajos asignados.", PermisosCatalog.DefaultOperador)
+            );
+            db.SaveChanges();
+        }
+
+        if (db.Usuarios.Count() == 0)
+        {
+            var (hash, sal) = PasswordHasher.Hash("123456");
+            db.Usuarios.Add(new Usuario
+            {
+                Id = "usu-admin",
+                NombreUsuario = "admin",
+                PasswordHash = hash,
+                Sal = sal,
+                RolId = "rol-admin",
+                Estado = EstadoUsuario.ACTIVO,
+                CreatedAt = DateTime.Now,
+            });
             db.SaveChanges();
         }
 
@@ -248,5 +275,14 @@ public class DbInitializer
             Monto = monto,
             Fecha = ParseDate(fecha),
             TrabajoId = trabajoId,
+        };
+
+    private static Rol Rol(string id, string nombre, string descripcion, IEnumerable<string> permisos) =>
+        new Rol()
+        {
+            Id = id,
+            Nombre = nombre,
+            Descripcion = descripcion,
+            Permisos = JsonSerializer.Serialize(permisos),
         };
 }

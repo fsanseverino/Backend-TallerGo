@@ -85,6 +85,22 @@ public static class EsquemaSeguro
                 PrecioUnitario TEXT NOT NULL,
                 RepuestoId TEXT NULL
             )",
+            @"CREATE TABLE IF NOT EXISTS Roles (
+                Id TEXT NOT NULL PRIMARY KEY,
+                Nombre TEXT NOT NULL,
+                Descripcion TEXT NOT NULL,
+                Permisos TEXT NOT NULL
+            )",
+            @"CREATE TABLE IF NOT EXISTS Usuarios (
+                Id TEXT NOT NULL PRIMARY KEY,
+                EmpleadoId TEXT NULL,
+                Usuario TEXT NOT NULL,
+                PasswordHash TEXT NOT NULL,
+                Sal TEXT NOT NULL,
+                RolId TEXT NOT NULL,
+                Estado TEXT NOT NULL,
+                CreatedAt TEXT NULL
+            )",
         };
         foreach (var sql in sentencias)
         {
