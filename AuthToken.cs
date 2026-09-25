@@ -39,7 +39,8 @@ public static class AuthToken
         Payload? payload;
         try
         {
-            payload = JsonSerializer.Deserialize<Payload>(Encoding.UTF8.GetString(FromBase64(partes[0])));
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            payload = JsonSerializer.Deserialize<Payload>(Encoding.UTF8.GetString(FromBase64(partes[0])), options);
         }
         catch (Exception)
         {

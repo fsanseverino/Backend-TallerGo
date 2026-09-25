@@ -108,6 +108,7 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpGet]
+    [RequierePermiso("trabajos:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -115,6 +116,7 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpGet("por-cliente/{clienteId}")]
+    [RequierePermiso("trabajos:ver")]
     public async Task<IActionResult> ByCliente(string clienteId)
     {
         var db = AppDb.Open();
@@ -122,6 +124,7 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpGet("por-vehiculo/{vehiculoId}")]
+    [RequierePermiso("trabajos:ver")]
     public async Task<IActionResult> ByVehiculo(string vehiculoId)
     {
         var db = AppDb.Open();
@@ -129,6 +132,7 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("trabajos:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -137,6 +141,7 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("trabajos:crear")]
     public async Task<IActionResult> Create(Trabajo trabajo)
     {
         var db = AppDb.Open();
@@ -181,6 +186,7 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [RequierePermiso("trabajos:editar")]
     public async Task<IActionResult> Update(string id, Trabajo datos)
     {
         var db = AppDb.Open();
@@ -248,6 +254,7 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpPost("{id}/pagos")]
+    [RequierePermiso("caja:cobrar")]
     public async Task<IActionResult> RegistrarPago(string id, RegistrarPagoRequest request)
     {
         var db = AppDb.Open();
@@ -292,6 +299,7 @@ public class TrabajosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("trabajos:eliminar")]
     public async Task<IActionResult> Delete(string id)
     {
         var db = AppDb.Open();

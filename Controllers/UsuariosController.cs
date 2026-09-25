@@ -7,10 +7,10 @@ namespace Backend_TallerGo.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[RequierePermiso("usuarios:ver")]
 public class UsuariosController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("usuarios:ver")]
     public IActionResult Listar()
     {
         var db = AppDb.Open();
@@ -32,6 +32,7 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("usuarios:ver")]
     public IActionResult Obtener(string id)
     {
         var db = AppDb.Open();
@@ -128,8 +129,51 @@ public class UsuariosController : ControllerBase
         var (hash, sal) = PasswordHasher.Hash("123456");
         usuario.PasswordHash = hash;
         usuario.Sal = sal;
+        usuario.DebeCambiarPassword = true;
         db.SaveChanges();
-        return Ok(new { mensaje = "Contraseña restablecida a 123456." });
+        return Ok(new { mensaje = "Contraseña restablecida a 123456. Deberá cambiarla al ingresar." });
+    }
+
+    [HttpPost("{id}/cambiar-password")]
+    public IActionResult CambiarPassword(string id, CambiarPasswordRequest request)
+    {
+        var db = AppDb.Open();
+        var sesion = HttpContext.Items[AuthToken.CLAVE_SESION] as SesionActual;
+        var esPropio = sesion is not null && sesion.UsuarioId == id;
+        var esAdmin = sesion is not null && sesion.TienePermiso("usuarios:editar");
+        if (!esPropio && !esAdmin)
+            return StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "No podés cambiar la contraseña de otro usuario." });
+
+        var usuario = db.Usuarios.Find(id);
+        if (usuario is null)
+            return NotFound(new { mensaje = "Usuario no encontrado." });
+
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
+            return BadRequest(new { mensaje = "La contraseña debe tener al menos 6 caracteres." });
+
+        var (hash, sal) = PasswordHasher.Hash(request.Password);
+        usuario.PasswordHash = hash;
+        usuario.Sal = sal;
+        usuario.DebeCambiarPassword = false;
+        db.SaveChanges();
+        return Ok(new { mensaje = "Contraseña actualizada." });
+    }
+
+    [HttpDelete("{id}")]
+    [RequierePermiso("usuarios:editar")]
+    public IActionResult Eliminar(string id)
+    {
+        var db = AppDb.Open();
+        var usuario = db.Usuarios.Find(id);
+        if (usuario is null)
+            return NotFound(new { mensaje = "Usuario no encontrado." });
+
+        if (string.Equals(usuario.NombreUsuario, "admin", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { mensaje = "El usuario admin no puede eliminarse." });
+
+        db.Usuarios.Remove(usuario);
+        db.SaveChanges();
+        return Ok(new { mensaje = "Usuario eliminado." });
     }
 
     private static string? ObtenerEmpleado(TallerGoDbContext db, string? id)

@@ -10,6 +10,7 @@ namespace Backend_TallerGo.Controllers;
 public class RepuestosController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("inventario:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -17,6 +18,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("inventario:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -25,6 +27,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("inventario:crear")]
     public async Task<IActionResult> Create(Repuesto repuesto)
     {
         var db = AppDb.Open();
@@ -37,6 +40,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [RequierePermiso("inventario:editar")]
     public async Task<IActionResult> Update(string id, Repuesto datos)
     {
         var db = AppDb.Open();
@@ -59,6 +63,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("inventario:eliminar")]
     public async Task<IActionResult> Delete(string id)
     {
         var db = AppDb.Open();
@@ -72,6 +77,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpPost("{id}/stock")]
+    [RequierePermiso("inventario:editar")]
     public async Task<IActionResult> AjustarStock(string id, AjusteStockRequest request)
     {
         var db = AppDb.Open();

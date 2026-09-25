@@ -47,6 +47,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpGet]
+    [RequierePermiso("presupuestos:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -54,6 +55,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("presupuestos:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -62,6 +64,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("presupuestos:crear")]
     public async Task<IActionResult> Create(Presupuesto presupuesto)
     {
         var db = AppDb.Open();
@@ -80,6 +83,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [RequierePermiso("presupuestos:editar")]
     public async Task<IActionResult> Update(string id, Presupuesto datos)
     {
         var db = AppDb.Open();
@@ -113,6 +117,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("presupuestos:eliminar")]
     public async Task<IActionResult> Delete(string id)
     {
         var db = AppDb.Open();
@@ -128,6 +133,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpPost("{id}/convertir")]
+    [RequierePermiso("presupuestos:convertir")]
     public async Task<IActionResult> Convertir(string id)
     {
         var db = AppDb.Open();

@@ -36,6 +36,11 @@ public static class EsquemaSeguro
             Ejecutar(db, "ALTER TABLE Trabajos ADD COLUMN PresupuestoId TEXT NULL");
         }
 
+        if (!ExisteColumna(db, "Usuarios", "DebeCambiarPassword"))
+        {
+            Ejecutar(db, "ALTER TABLE Usuarios ADD COLUMN DebeCambiarPassword INTEGER NOT NULL DEFAULT 0");
+        }
+
         var sentencias = new[]
         {
             // phpcs:disable
@@ -99,6 +104,7 @@ public static class EsquemaSeguro
                 Sal TEXT NOT NULL,
                 RolId TEXT NOT NULL,
                 Estado TEXT NOT NULL,
+                DebeCambiarPassword INTEGER NOT NULL DEFAULT 0,
                 CreatedAt TEXT NULL
             )",
         };

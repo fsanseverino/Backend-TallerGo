@@ -33,10 +33,12 @@ public class AuthController : ControllerBase
         {
             token,
             expira,
+            usuarioId = usuario.Id,
             usuario = usuario.NombreUsuario,
             nombre = ObtenerNombre(db, usuario),
             rol = nombreRol,
             permisos,
+            debeCambiarPassword = usuario.DebeCambiarPassword,
         });
     }
 

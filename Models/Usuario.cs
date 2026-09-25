@@ -15,6 +15,7 @@ public class Usuario
     public string Sal { get; set; } = string.Empty;
     public string RolId { get; set; } = string.Empty;
     public EstadoUsuario Estado { get; set; } = EstadoUsuario.ACTIVO;
+    public bool DebeCambiarPassword { get; set; }
     public DateTime? CreatedAt { get; set; }
 
 }

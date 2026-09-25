@@ -10,6 +10,7 @@ namespace Backend_TallerGo.Controllers;
 public class CajasController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("caja:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -17,6 +18,7 @@ public class CajasController : ControllerBase
     }
 
     [HttpGet("abierta")]
+    [RequierePermiso("caja:ver")]
     public async Task<IActionResult> Abierta()
     {
         var db = AppDb.Open();
@@ -27,6 +29,7 @@ public class CajasController : ControllerBase
     }
 
     [HttpGet("{id}/movimientos")]
+    [RequierePermiso("caja:ver")]
     public async Task<IActionResult> Movimientos(string id)
     {
         var db = AppDb.Open();
@@ -34,6 +37,7 @@ public class CajasController : ControllerBase
     }
 
     [HttpGet("todos/movimientos")]
+    [RequierePermiso("caja:ver")]
     public async Task<IActionResult> TodosLosMovimientos()
     {
         var db = AppDb.Open();
@@ -41,6 +45,7 @@ public class CajasController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("caja:abrir")]
     public async Task<IActionResult> Abrir(Caja caja)
     {
         var db = AppDb.Open();
@@ -59,6 +64,7 @@ public class CajasController : ControllerBase
     }
 
     [HttpPost("{id}/cierre")]
+    [RequierePermiso("caja:cerrar")]
     public async Task<IActionResult> Cerrar(string id)
     {
         var db = AppDb.Open();
@@ -75,6 +81,7 @@ public class CajasController : ControllerBase
     }
 
     [HttpPost("{id}/movimientos")]
+    [RequierePermiso("caja:registrar")]
     public async Task<IActionResult> AgregarMovimiento(string id, MovimientoCaja movimiento)
     {
         var db = AppDb.Open();
@@ -95,6 +102,7 @@ public class CajasController : ControllerBase
     }
 
     [HttpDelete("movimientos/{id}")]
+    [RequierePermiso("caja:registrar")]
     public async Task<IActionResult> EliminarMovimiento(string id)
     {
         var db = AppDb.Open();

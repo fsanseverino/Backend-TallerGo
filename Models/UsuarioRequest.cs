@@ -16,3 +16,8 @@ public class ActualizarUsuarioRequest
     public string? EmpleadoId { get; set; }
     public string? Password { get; set; }
 }
+
+public class CambiarPasswordRequest
+{
+    public string Password { get; set; } = string.Empty;
+}

@@ -10,6 +10,7 @@ namespace Backend_TallerGo.Controllers;
 public class ConfiguracionesController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("configuracion:ver")]
     public async Task<IActionResult> List()
     {
         var db = AppDb.Open();
@@ -21,6 +22,7 @@ public class ConfiguracionesController : ControllerBase
     }
 
     [HttpPut]
+    [RequierePermiso("configuracion:editar")]
     public async Task<IActionResult> Upsert([FromBody] List<ConfiguracionUpdate> entradas)
     {
         var db = AppDb.Open();

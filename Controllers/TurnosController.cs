@@ -10,6 +10,7 @@ namespace Backend_TallerGo.Controllers;
 public class TurnosController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("agenda:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -17,6 +18,7 @@ public class TurnosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("agenda:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -25,6 +27,7 @@ public class TurnosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("agenda:crear")]
     public async Task<IActionResult> Create(Turno turno)
     {
         var db = AppDb.Open();
@@ -37,6 +40,7 @@ public class TurnosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [RequierePermiso("agenda:editar")]
     public async Task<IActionResult> Update(string id, Turno datos)
     {
         var db = AppDb.Open();
@@ -59,6 +63,7 @@ public class TurnosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("agenda:eliminar")]
     public async Task<IActionResult> Delete(string id)
     {
         var db = AppDb.Open();
