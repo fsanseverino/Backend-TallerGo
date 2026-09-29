@@ -41,6 +41,20 @@ public class DbInitializer
             db.SaveChanges();
         }
 
+        foreach (var rol in db.Roles.Where(r => r.Id == "rol-admin" || r.Id == "rol-encargado"))
+        {
+            if (string.IsNullOrWhiteSpace(rol.Permisos))
+            {
+                continue;
+            }
+            var actuales = JsonSerializer.Deserialize<string[]>(rol.Permisos) ?? Array.Empty<string>();
+            if (!actuales.Contains("finanzas:ver"))
+            {
+                rol.Permisos = JsonSerializer.Serialize(actuales.Append("finanzas:ver").ToArray());
+            }
+        }
+        db.SaveChanges();
+
         if (db.Usuarios.Count() == 0)
         {
             var (hash, sal) = PasswordHasher.Hash("123456");

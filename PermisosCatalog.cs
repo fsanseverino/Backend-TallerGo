@@ -13,6 +13,7 @@ public static class PermisosCatalog
         "agenda:ver", "agenda:crear", "agenda:editar", "agenda:eliminar",
         "inventario:ver", "inventario:crear", "inventario:editar", "inventario:eliminar",
         "caja:ver", "caja:abrir", "caja:cerrar", "caja:registrar", "caja:cobrar",
+        "finanzas:ver",
         "reportes:ver",
         "catalogos:ver", "catalogos:editar",
         "configuracion:ver", "configuracion:editar",
@@ -29,6 +30,7 @@ public static class PermisosCatalog
         "agenda:ver", "agenda:crear", "agenda:editar", "agenda:eliminar",
         "inventario:ver", "inventario:crear", "inventario:editar",
         "caja:ver", "caja:abrir", "caja:cerrar", "caja:registrar", "caja:cobrar",
+        "finanzas:ver",
         "reportes:ver",
         "catalogos:ver",
     };
