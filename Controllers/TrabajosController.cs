@@ -225,31 +225,67 @@ public class TrabajosController : ControllerBase
             db.TrabajoItems.Add(item);
         }
 
-        var pagosActuales = await db.PagosTrabajo.Where(p => p.TrabajoId == id).ToListAsync();
-        var idsRecibidos = new HashSet<string>(datos.Pagos.Select(p => p.Id).Where(i => !string.IsNullOrWhiteSpace(i)));
-        foreach (var pagoExistente in pagosActuales.Where(p => !idsRecibidos.Contains(p.Id)))
-            db.PagosTrabajo.Remove(pagoExistente);
-
-        foreach (var pago in datos.Pagos)
+        if (datos.Pagos is not null)
         {
-            if (string.IsNullOrWhiteSpace(pago.Id))
-                pago.Id = Guid.NewGuid().ToString();
-            var actual = pagosActuales.FirstOrDefault(p => p.Id == pago.Id);
-            if (actual is not null)
+            var pagosActuales = await db.PagosTrabajo.Where(p => p.TrabajoId == id).ToListAsync();
+            var idsRecibidos = new HashSet<string>(datos.Pagos.Select(p => p.Id).Where(i => !string.IsNullOrWhiteSpace(i)));
+            var aEliminar = pagosActuales.Where(p => !idsRecibidos.Contains(p.Id)).ToList();
+            var pagoVinculado = aEliminar.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.MovimientoCajaId));
+            if (pagoVinculado is not null)
+                return Conflict(new { mensaje = $"El pago del {pagoVinculado.Fecha:dd/MM/yyyy} por ${pagoVinculado.Monto} está registrado en Caja. Eliminalo desde Caja para actualizar la deuda." });
+            foreach (var pagoExistente in aEliminar)
+                db.PagosTrabajo.Remove(pagoExistente);
+
+            foreach (var pago in datos.Pagos)
             {
-                actual.Monto = pago.Monto;
-                actual.Fecha = pago.Fecha;
-            }
-            else
-            {
-                pago.TrabajoId = id;
-                db.PagosTrabajo.Add(pago);
+                if (string.IsNullOrWhiteSpace(pago.Id))
+                    pago.Id = Guid.NewGuid().ToString();
+                var actual = pagosActuales.FirstOrDefault(p => p.Id == pago.Id);
+                if (actual is not null)
+                {
+                    actual.Monto = pago.Monto;
+                    actual.Fecha = pago.Fecha;
+                    if (!string.IsNullOrWhiteSpace(actual.MovimientoCajaId))
+                    {
+                        var movimiento = await db.MovimientosCaja.FindAsync(actual.MovimientoCajaId);
+                        if (movimiento is not null && movimiento.Monto != pago.Monto)
+                        {
+                            movimiento.Monto = pago.Monto;
+                            db.MovimientosCaja.Update(movimiento);
+                        }
+                    }
+                }
+                else
+                {
+                    pago.TrabajoId = id;
+                    db.PagosTrabajo.Add(pago);
+                }
             }
         }
 
         await db.SaveChangesAsync();
         await AjustarStock(db, viejos, datos.Items);
         await VincularPagosACajaAbierta(db, trabajo);
+        return Ok(await Cargar(db, id));
+    }
+
+    [HttpPost("{id}/estado")]
+    [RequierePermiso("trabajos:editar")]
+    public async Task<IActionResult> CambiarEstado(string id, CambiarEstadoRequest request)
+    {
+        var db = AppDb.Open();
+        var trabajo = await db.Trabajos.FindAsync(id);
+        if (trabajo is null)
+            return NotFound();
+
+        if (request.Estado.HasValue)
+            trabajo.Estado = request.Estado.Value;
+        if (!string.IsNullOrWhiteSpace(request.FechaEntrega))
+            trabajo.FechaEntrega = request.FechaEntrega;
+        if (trabajo.Estado == EstadoTrabajo.ENTREGADO && string.IsNullOrWhiteSpace(trabajo.FechaEntrega))
+            trabajo.FechaEntrega = DateTime.Now.ToString("yyyy-MM-dd");
+
+        await db.SaveChangesAsync();
         return Ok(await Cargar(db, id));
     }
 

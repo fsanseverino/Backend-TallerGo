@@ -118,7 +118,7 @@ public class CajasController : ControllerBase
         {
             var pago = await db.PagosTrabajo.FirstOrDefaultAsync(p => p.MovimientoCajaId == movimiento.Id);
             if (pago is not null)
-                pago.MovimientoCajaId = null;
+                db.PagosTrabajo.Remove(pago);
         }
 
         db.MovimientosCaja.Remove(movimiento);

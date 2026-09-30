@@ -56,6 +56,8 @@ public class UsuariosController : ControllerBase
         var db = AppDb.Open();
         if (string.IsNullOrWhiteSpace(request.Usuario))
             return BadRequest(new { mensaje = "El nombre de usuario es obligatorio." });
+        if (!System.Text.RegularExpressions.Regex.IsMatch(request.Usuario, "^[a-z0-9]+$"))
+            return BadRequest(new { mensaje = "El nombre de usuario solo puede tener minúsculas y números, sin espacios ni símbolos." });
         if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
             return BadRequest(new { mensaje = "La contraseña debe tener al menos 6 caracteres." });
         if (db.Roles.Find(request.RolId) is null)
