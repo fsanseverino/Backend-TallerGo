@@ -81,6 +81,15 @@ public static class EsquemaSeguro
                 Observaciones TEXT NOT NULL,
                 TrabajoId TEXT NULL
             )",
+            @"CREATE TABLE IF NOT EXISTS StockMovimientos (
+                Id TEXT NOT NULL PRIMARY KEY,
+                RepuestoId TEXT NOT NULL,
+                Fecha TEXT NOT NULL,
+                Tipo TEXT NOT NULL,
+                Cantidad INTEGER NOT NULL,
+                Motivo TEXT NULL,
+                StockResultante INTEGER NOT NULL
+            )",
             @"CREATE TABLE IF NOT EXISTS PresupuestoItems (
                 Id TEXT NOT NULL PRIMARY KEY,
                 PresupuestoId TEXT NOT NULL,

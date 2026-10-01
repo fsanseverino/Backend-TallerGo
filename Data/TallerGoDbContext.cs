@@ -22,6 +22,7 @@ public class TallerGoDbContext : DbContext
     public DbSet<Catalogo> Catalogos => Set<Catalogo>();
     public DbSet<CatalogoValor> CatalogoValores => Set<CatalogoValor>();
     public DbSet<Repuesto> Repuestos => Set<Repuesto>();
+    public DbSet<StockMovimiento> StockMovimientos => Set<StockMovimiento>();
     public DbSet<Turno> Turnos => Set<Turno>();
     public DbSet<Presupuesto> Presupuestos => Set<Presupuesto>();
     public DbSet<PresupuestoItem> PresupuestoItems => Set<PresupuestoItem>();
@@ -36,7 +37,7 @@ public class TallerGoDbContext : DbContext
             typeof(Cliente), typeof(Vehiculo), typeof(Empleado), typeof(Trabajo),
             typeof(TrabajoItem), typeof(PagoTrabajo), typeof(Caja), typeof(MovimientoCaja),
             typeof(Configuracion), typeof(Catalogo), typeof(CatalogoValor),
-            typeof(Repuesto), typeof(Turno), typeof(Presupuesto), typeof(PresupuestoItem),
+            typeof(Repuesto), typeof(StockMovimiento), typeof(Turno), typeof(Presupuesto), typeof(PresupuestoItem),
             typeof(Usuario), typeof(Rol)
         })
         {
@@ -132,6 +133,14 @@ public class TallerGoDbContext : DbContext
         repuesto.HasKey(r => r.Id);
         repuesto.Property(r => r.Codigo).HasMaxLength(50);
         repuesto.Property(r => r.Categoria).HasMaxLength(50);
+
+        var stockMov = modelBuilder.Entity<StockMovimiento>();
+        stockMov.HasKey(s => s.Id);
+        stockMov.Property(s => s.Tipo).HasConversion<string>().HasMaxLength(20);
+        stockMov.HasOne<Repuesto>()
+            .WithMany()
+            .HasForeignKey(s => s.RepuestoId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         var turno = modelBuilder.Entity<Turno>();
         turno.HasKey(t => t.Id);
