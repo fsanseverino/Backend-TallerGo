@@ -57,7 +57,8 @@ public class DbInitializer
 
         if (db.Usuarios.Count() == 0)
         {
-            var (hash, sal) = PasswordHasher.Hash("123456");
+            var pass = AppConfig.InitialAdminPassword ?? "123456";
+            var (hash, sal) = PasswordHasher.Hash(pass);
             db.Usuarios.Add(new Usuario
             {
                 Id = "usu-admin",
@@ -66,12 +67,13 @@ public class DbInitializer
                 Sal = sal,
                 RolId = "rol-admin",
                 Estado = EstadoUsuario.ACTIVO,
+                DebeCambiarPassword = !string.IsNullOrWhiteSpace(AppConfig.InitialAdminPassword),
                 CreatedAt = DateTime.Now,
             });
             db.SaveChanges();
         }
 
-        if (db.Clientes.Count() > 0)
+        if (!AppConfig.SeedDemoData || db.Clientes.Count() > 0)
             return;
 
         var clientes = new[]

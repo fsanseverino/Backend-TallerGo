@@ -6,7 +6,7 @@ namespace Backend_TallerGo;
 
 public static class AuthToken
 {
-    private static readonly byte[] Clave = Encoding.UTF8.GetBytes("TallerGo-clave-firma-2026");
+    private static byte[] Clave => Encoding.UTF8.GetBytes(AppConfig.JwtSecret);
     public const string CLAVE_SESION = "SesionActual";
 
     public static string Generar(DateTime expira, string usuarioId, string rol, IEnumerable<string> permisos)

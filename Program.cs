@@ -5,6 +5,8 @@ using Backend_TallerGo.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+AppConfig.Cargar(builder.Configuration);
+
 // Servicios necesarios para los controladores y CORS.
 builder.Services.AddControllers().AddJsonOptions(opts =>
 {
@@ -17,7 +19,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Crear el esquema SQLite y cargar datos de ejemplo (una sola vez).
+// Crear el esquema SQLite y cargar datos base (una sola vez).
 AppDb.Open();
 
 if (app.Environment.IsDevelopment())
@@ -25,15 +27,40 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// CORS: habilitado para cualquier origin/método (solo desarrollo, sin auth ni cookies).
-app.UseCors(builder => builder
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+// CORS: orígenes configurados (por defecto http://localhost:4200 para dev).
+var corsOrigins = AppConfig.CorsOrigins;
+app.UseCors(policy =>
+{
+    if (corsOrigins.Count == 0)
+    {
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    }
+    else
+    {
+        policy.WithOrigins(corsOrigins.ToArray()).AllowAnyMethod().AllowAnyHeader();
+    }
+});
 
 // Servir el frontend Angular compilado (wwwroot) en el mismo host.
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+// Excepciones no controladas → 500 + log en archivo.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        Logs.EscribirError(ex);
+        if (context.Response.HasStarted)
+            throw;
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new { mensaje = "Error interno del servidor." });
+    }
+});
 
 // Auth mínima: los endpoints /api requieren Bearer token válido (24 hs), salvo /api/auth.
 app.Use(async (context, next) =>

@@ -18,6 +18,7 @@ public static class PermisosCatalog
         "catalogos:ver", "catalogos:editar",
         "configuracion:ver", "configuracion:editar",
         "usuarios:ver", "usuarios:editar",
+        "sistema:ver", "sistema:backup",
     };
 
     public static readonly string[] DefaultEncargado =
