@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Backend_TallerGo;
 using Backend_TallerGo.Data;
+using Backend_TallerGo.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +20,8 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Crear el esquema SQLite y cargar datos base (una sola vez).
-AppDb.Open();
+// Crear el esquema SQLite del catálogo y las bases de sistema (una sola vez).
+AppDb.Bootstrap();
 
 if (app.Environment.IsDevelopment())
 {
@@ -72,15 +73,30 @@ app.Use(async (context, next) =>
         var header = context.Request.Headers.Authorization.ToString();
         var token = header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? header["Bearer ".Length..] : null;
         var sesion = AuthToken.Decodificar(token);
-        if (sesion is null)
+        if (sesion is null || string.IsNullOrWhiteSpace(sesion.Slug))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsJsonAsync(new { mensaje = "Sesión inválida o expirada. Iniciá sesión nuevamente." });
             return;
         }
+        var tenant = CatalogDb.PorSlug(sesion.Slug);
+        if (tenant is null || tenant.Estado != Tenant.EstadoActivo)
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsJsonAsync(new { mensaje = "El taller está suspendido o inactivo. Contactá al administrador de la plataforma." });
+            return;
+        }
+        TenantActual.Fijar(sesion.Slug);
         context.Items[AuthToken.CLAVE_SESION] = sesion;
     }
-    await next();
+    try
+    {
+        await next();
+    }
+    finally
+    {
+        TenantActual.Limpiar();
+    }
 });
 
 app.MapControllers();

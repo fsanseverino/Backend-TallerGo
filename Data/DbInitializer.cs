@@ -8,7 +8,7 @@ public class DbInitializer
 {
     public static DateTime ParseDate(string value) => DateTime.Parse(value);
 
-    public static void Seed(TallerGoDbContext db)
+    public static void Seed(TallerGoDbContext db, bool esPlataforma = false)
     {
         if (db.Configuraciones.Count() == 0)
         {
@@ -51,6 +51,18 @@ public class DbInitializer
             if (!actuales.Contains("finanzas:ver"))
             {
                 rol.Permisos = JsonSerializer.Serialize(actuales.Append("finanzas:ver").ToArray());
+            }
+        }
+
+        if (esPlataforma)
+        {
+            var rolAdmin = db.Roles.FirstOrDefault(r => r.Id == "rol-admin");
+            if (rolAdmin is not null && !string.IsNullOrWhiteSpace(rolAdmin.Permisos))
+            {
+                var actuales = JsonSerializer.Deserialize<string[]>(rolAdmin.Permisos) ?? Array.Empty<string>();
+                var faltan = PermisosCatalog.Plataforma.Where(p => !actuales.Contains(p)).ToArray();
+                if (faltan.Length > 0)
+                    rolAdmin.Permisos = JsonSerializer.Serialize(actuales.Concat(faltan).ToArray());
             }
         }
         db.SaveChanges();

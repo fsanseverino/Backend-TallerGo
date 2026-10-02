@@ -5,6 +5,7 @@ public class SesionActual
     public string UsuarioId { get; set; } = string.Empty;
     public string Rol { get; set; } = string.Empty;
     public HashSet<string> Permisos { get; set; } = new(StringComparer.Ordinal);
+    public string Slug { get; set; } = string.Empty;
 
     public bool TienePermiso(string codigo)
     {

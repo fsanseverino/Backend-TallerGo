@@ -9,7 +9,7 @@ public static class AuthToken
     private static byte[] Clave => Encoding.UTF8.GetBytes(AppConfig.JwtSecret);
     public const string CLAVE_SESION = "SesionActual";
 
-    public static string Generar(DateTime expira, string usuarioId, string rol, IEnumerable<string> permisos)
+    public static string Generar(DateTime expira, string usuarioId, string rol, IEnumerable<string> permisos, string slug)
     {
         var payload = new
         {
@@ -17,6 +17,7 @@ public static class AuthToken
             uid = usuarioId,
             rol = rol,
             perms = permisos.ToArray(),
+            slug = slug,
         };
         var json = JsonSerializer.Serialize(payload);
         var basePayload = Base64(Encoding.UTF8.GetBytes(json));
@@ -55,6 +56,7 @@ public static class AuthToken
             UsuarioId = payload.Uid ?? string.Empty,
             Rol = payload.Rol,
             Permisos = new HashSet<string>(payload.Perms ?? Array.Empty<string>(), StringComparer.Ordinal),
+            Slug = payload.Slug ?? string.Empty,
         };
     }
 
@@ -66,6 +68,7 @@ public static class AuthToken
         public string? Uid { get; set; }
         public string? Rol { get; set; }
         public string[]? Perms { get; set; }
+        public string? Slug { get; set; }
     }
 
     private static string Firmar(string payload)

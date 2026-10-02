@@ -44,4 +44,11 @@ public static class PermisosCatalog
         "trabajos:ver", "trabajos:editar",
         "agenda:ver",
     };
+
+    /// Permisos exclusivos de la plataforma (superadmin). NO se incluyen en
+    /// Todos: ningún taller regular los recibe por más ADMIN que sea.
+    public static readonly string[] Plataforma =
+    {
+        "plataforma:ver", "plataforma:crear", "plataforma:editar",
+    };
 }
