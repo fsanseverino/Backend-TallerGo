@@ -19,6 +19,17 @@ public class PresupuestosController : ControllerBase
         return presupuesto;
     }
 
+    private static async Task<Trabajo?> CargarTrabajo(TallerGoDbContext db, string id)
+    {
+        var trabajo = await db.Trabajos.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+        if (trabajo is null)
+            return null;
+
+        trabajo.Items = await db.TrabajoItems.AsNoTracking().Where(i => i.TrabajoId == id).ToListAsync();
+        trabajo.Pagos = await db.PagosTrabajo.AsNoTracking().Where(p => p.TrabajoId == id).ToListAsync();
+        return trabajo;
+    }
+
     private static async Task<List<Presupuesto>> CargarTodos(TallerGoDbContext db)
     {
         var lista = await db.Presupuestos.AsNoTracking().OrderByDescending(p => p.Fecha).ToListAsync();
@@ -47,6 +58,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpGet]
+    [RequierePermiso("presupuestos:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -54,6 +66,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("presupuestos:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -62,6 +75,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("presupuestos:crear")]
     public async Task<IActionResult> Create(Presupuesto presupuesto)
     {
         var db = AppDb.Open();
@@ -80,6 +94,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [RequierePermiso("presupuestos:editar")]
     public async Task<IActionResult> Update(string id, Presupuesto datos)
     {
         var db = AppDb.Open();
@@ -113,6 +128,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("presupuestos:eliminar")]
     public async Task<IActionResult> Delete(string id)
     {
         var db = AppDb.Open();
@@ -128,6 +144,7 @@ public class PresupuestosController : ControllerBase
     }
 
     [HttpPost("{id}/convertir")]
+    [RequierePermiso("presupuestos:convertir")]
     public async Task<IActionResult> Convertir(string id)
     {
         var db = AppDb.Open();
@@ -191,6 +208,6 @@ public class PresupuestosController : ControllerBase
         presupuesto.TrabajoId = trabajo.Id;
         await db.SaveChangesAsync();
 
-        return Ok(new { trabajo = await Cargar(db, trabajo.Id), presupuesto = await Cargar(db, id) });
+        return Ok(new { trabajo = await CargarTrabajo(db, trabajo.Id), presupuesto = await Cargar(db, id) });
     }
 }

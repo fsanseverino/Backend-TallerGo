@@ -10,6 +10,7 @@ namespace Backend_TallerGo.Controllers;
 public class EmpleadosController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("empleados:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -17,6 +18,7 @@ public class EmpleadosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("empleados:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -25,6 +27,7 @@ public class EmpleadosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("empleados:crear")]
     public async Task<IActionResult> Create(Empleado empleado)
     {
         var db = AppDb.Open();
@@ -39,6 +42,7 @@ public class EmpleadosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [RequierePermiso("empleados:editar")]
     public async Task<IActionResult> Update(string id, Empleado datos)
     {
         var db = AppDb.Open();
@@ -60,6 +64,7 @@ public class EmpleadosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("empleados:eliminar")]
     public async Task<IActionResult> Delete(string id)
     {
         var db = AppDb.Open();

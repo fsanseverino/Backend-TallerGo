@@ -10,6 +10,7 @@ namespace Backend_TallerGo.Controllers;
 public class VehiculosController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("vehiculos:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -17,6 +18,7 @@ public class VehiculosController : ControllerBase
     }
 
     [HttpGet("por-cliente/{clienteId}")]
+    [RequierePermiso("vehiculos:ver")]
     public async Task<IActionResult> ByCliente(string clienteId)
     {
         var db = AppDb.Open();
@@ -24,6 +26,7 @@ public class VehiculosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("vehiculos:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -32,6 +35,7 @@ public class VehiculosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("vehiculos:crear")]
     public async Task<IActionResult> Create(Vehiculo vehiculo)
     {
         var db = AppDb.Open();
@@ -44,6 +48,7 @@ public class VehiculosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [RequierePermiso("vehiculos:editar")]
     public async Task<IActionResult> Update(string id, Vehiculo datos)
     {
         var db = AppDb.Open();
@@ -66,6 +71,7 @@ public class VehiculosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("vehiculos:eliminar")]
     public async Task<IActionResult> Delete(string id)
     {
         var db = AppDb.Open();

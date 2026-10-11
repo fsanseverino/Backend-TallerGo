@@ -1,36 +1,74 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace Backend_TallerGo;
 
 public static class AuthToken
 {
-    private static readonly byte[] Clave = Encoding.UTF8.GetBytes("TallerGo-clave-firma-2026");
+    private static byte[] Clave => Encoding.UTF8.GetBytes(AppConfig.JwtSecret);
+    public const string CLAVE_SESION = "SesionActual";
 
-    public static string Generar(DateTime expira)
+    public static string Generar(DateTime expira, string usuarioId, string rol, IEnumerable<string> permisos, string slug)
     {
-        var exp = new DateTimeOffset(expira).ToUnixTimeSeconds().ToString();
-        var payload = Base64(Encoding.UTF8.GetBytes(exp));
-        var firma = Firmar(payload);
-        return $"{payload}.{firma}";
+        var payload = new
+        {
+            exp = new DateTimeOffset(expira).ToUnixTimeSeconds(),
+            uid = usuarioId,
+            rol = rol,
+            perms = permisos.ToArray(),
+            slug = slug,
+        };
+        var json = JsonSerializer.Serialize(payload);
+        var basePayload = Base64(Encoding.UTF8.GetBytes(json));
+        var firma = Firmar(basePayload);
+        return $"{basePayload}.{firma}";
     }
 
-    public static bool Validar(string? token)
+    public static SesionActual? Decodificar(string? token)
     {
         if (string.IsNullOrWhiteSpace(token))
-            return false;
+            return null;
 
         var partes = token.Split('.');
         if (partes.Length != 2)
-            return false;
+            return null;
 
         if (!FixedTimeEquals(partes[1], Firmar(partes[0])))
-            return false;
+            return null;
 
-        if (!long.TryParse(Encoding.UTF8.GetString(FromBase64(partes[0])), out var exp))
-            return false;
+        Payload? payload;
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            payload = JsonSerializer.Deserialize<Payload>(Encoding.UTF8.GetString(FromBase64(partes[0])), options);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
 
-        return DateTimeOffset.FromUnixTimeSeconds(exp) > DateTimeOffset.UtcNow;
+        if (payload is null || string.IsNullOrEmpty(payload.Rol) || DateTimeOffset.FromUnixTimeSeconds(payload.Exp) <= DateTimeOffset.UtcNow)
+            return null;
+
+        return new SesionActual
+        {
+            UsuarioId = payload.Uid ?? string.Empty,
+            Rol = payload.Rol,
+            Permisos = new HashSet<string>(payload.Perms ?? Array.Empty<string>(), StringComparer.Ordinal),
+            Slug = payload.Slug ?? string.Empty,
+        };
+    }
+
+    public static bool Validar(string? token) => Decodificar(token) != null;
+
+    private sealed class Payload
+    {
+        public long Exp { get; set; }
+        public string? Uid { get; set; }
+        public string? Rol { get; set; }
+        public string[]? Perms { get; set; }
+        public string? Slug { get; set; }
     }
 
     private static string Firmar(string payload)

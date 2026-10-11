@@ -1,5 +1,6 @@
 using Backend_TallerGo.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Backend_TallerGo.Data;
 
@@ -7,7 +8,7 @@ public class DbInitializer
 {
     public static DateTime ParseDate(string value) => DateTime.Parse(value);
 
-    public static void Seed(TallerGoDbContext db)
+    public static void Seed(TallerGoDbContext db, bool esPlataforma = false)
     {
         if (db.Configuraciones.Count() == 0)
         {
@@ -30,7 +31,61 @@ public class DbInitializer
             db.SaveChanges();
         }
 
-        if (db.Clientes.Count() > 0)
+        if (db.Roles.Count() == 0)
+        {
+            db.Roles.AddRange(
+                Rol("rol-admin", "ADMIN", "Administrador general (dueño del sistema). Acceso completo.", PermisosCatalog.Todos),
+                Rol("rol-encargado", "ENCARGADO", "Mostrador: clientes, OT, presupuestos, agenda, caja y reportes.", PermisosCatalog.DefaultEncargado),
+                Rol("rol-operador", "OPERADOR", "Taller: ve y actualiza los trabajos asignados.", PermisosCatalog.DefaultOperador)
+            );
+            db.SaveChanges();
+        }
+
+        foreach (var rol in db.Roles.Where(r => r.Id == "rol-admin" || r.Id == "rol-encargado"))
+        {
+            if (string.IsNullOrWhiteSpace(rol.Permisos))
+            {
+                continue;
+            }
+            var actuales = JsonSerializer.Deserialize<string[]>(rol.Permisos) ?? Array.Empty<string>();
+            if (!actuales.Contains("finanzas:ver"))
+            {
+                rol.Permisos = JsonSerializer.Serialize(actuales.Append("finanzas:ver").ToArray());
+            }
+        }
+
+        if (esPlataforma)
+        {
+            var rolAdmin = db.Roles.FirstOrDefault(r => r.Id == "rol-admin");
+            if (rolAdmin is not null && !string.IsNullOrWhiteSpace(rolAdmin.Permisos))
+            {
+                var actuales = JsonSerializer.Deserialize<string[]>(rolAdmin.Permisos) ?? Array.Empty<string>();
+                var faltan = PermisosCatalog.Plataforma.Where(p => !actuales.Contains(p)).ToArray();
+                if (faltan.Length > 0)
+                    rolAdmin.Permisos = JsonSerializer.Serialize(actuales.Concat(faltan).ToArray());
+            }
+        }
+        db.SaveChanges();
+
+        if (db.Usuarios.Count() == 0)
+        {
+            var pass = AppConfig.InitialAdminPassword ?? "123456";
+            var (hash, sal) = PasswordHasher.Hash(pass);
+            db.Usuarios.Add(new Usuario
+            {
+                Id = "usu-admin",
+                NombreUsuario = "admin",
+                PasswordHash = hash,
+                Sal = sal,
+                RolId = "rol-admin",
+                Estado = EstadoUsuario.ACTIVO,
+                DebeCambiarPassword = !string.IsNullOrWhiteSpace(AppConfig.InitialAdminPassword),
+                CreatedAt = DateTime.Now,
+            });
+            db.SaveChanges();
+        }
+
+        if (!AppConfig.SeedDemoData || db.Clientes.Count() > 0)
             return;
 
         var clientes = new[]
@@ -248,5 +303,14 @@ public class DbInitializer
             Monto = monto,
             Fecha = ParseDate(fecha),
             TrabajoId = trabajoId,
+        };
+
+    private static Rol Rol(string id, string nombre, string descripcion, IEnumerable<string> permisos) =>
+        new Rol()
+        {
+            Id = id,
+            Nombre = nombre,
+            Descripcion = descripcion,
+            Permisos = JsonSerializer.Serialize(permisos),
         };
 }
