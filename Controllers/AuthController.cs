@@ -17,13 +17,16 @@ public class AuthController : ControllerBase
             return Unauthorized(new { mensaje = "El usuario debe tener el formato usuario@taller (por ejemplo: admin@tallergo)." });
 
         var tenant = CatalogDb.PorSlug(slug);
-        if (tenant is null || tenant.Estado != Tenant.EstadoActivo)
+        if (tenant is null)
             return Unauthorized(new { mensaje = "Usuario o contraseña incorrectos." });
 
         var db = AppDb.OpenParaSesion(slug);
         var usuarioDb = db.Usuarios.FirstOrDefault(u => u.NombreUsuario == usuario);
         if (usuarioDb is null || !PasswordHasher.Verificar(request.Password, usuarioDb.PasswordHash, usuarioDb.Sal))
             return Unauthorized(new { mensaje = "Usuario o contraseña incorrectos." });
+
+        if (tenant.Estado != Tenant.EstadoActivo)
+            return StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "El taller está suspendido. Contactá al administrador de la plataforma." });
 
         if (usuarioDb.Estado != EstadoUsuario.ACTIVO)
             return Unauthorized(new { mensaje = "Tu usuario está desactivado. Contactá al administrador." });
