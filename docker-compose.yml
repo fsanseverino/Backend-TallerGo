@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  tallergo:
+    build: .
+    image: tallergo:local
+    container_name: tallergo
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Jwt__Secret: ${JWT_SECRET}
+      SeedDemoData: ${SEED_DEMO_DATA:-false}
+      Data__Ruta: /data
+      Backups__Ruta: /backups
+      TZ: ${TZ:-America/Argentina/Buenos_Aires}
+    volumes:
+      - tallergo-data:/data
+      - tallergo-backups:/backups
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  tallergo-data:
+  tallergo-backups:

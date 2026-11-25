@@ -15,3 +15,9 @@ public class RegistrarPagoRequest
     public DateTime Fecha { get; set; }
     public string? CajaId { get; set; }
 }
+
+public class CambiarEstadoRequest
+{
+    public EstadoTrabajo? Estado { get; set; }
+    public string? FechaEntrega { get; set; }
+}

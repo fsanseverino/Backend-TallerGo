@@ -22,9 +22,12 @@ public class TallerGoDbContext : DbContext
     public DbSet<Catalogo> Catalogos => Set<Catalogo>();
     public DbSet<CatalogoValor> CatalogoValores => Set<CatalogoValor>();
     public DbSet<Repuesto> Repuestos => Set<Repuesto>();
+    public DbSet<StockMovimiento> StockMovimientos => Set<StockMovimiento>();
     public DbSet<Turno> Turnos => Set<Turno>();
     public DbSet<Presupuesto> Presupuestos => Set<Presupuesto>();
     public DbSet<PresupuestoItem> PresupuestoItems => Set<PresupuestoItem>();
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+    public DbSet<Rol> Roles => Set<Rol>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,7 +37,8 @@ public class TallerGoDbContext : DbContext
             typeof(Cliente), typeof(Vehiculo), typeof(Empleado), typeof(Trabajo),
             typeof(TrabajoItem), typeof(PagoTrabajo), typeof(Caja), typeof(MovimientoCaja),
             typeof(Configuracion), typeof(Catalogo), typeof(CatalogoValor),
-            typeof(Repuesto), typeof(Turno), typeof(Presupuesto), typeof(PresupuestoItem)
+            typeof(Repuesto), typeof(StockMovimiento), typeof(Turno), typeof(Presupuesto), typeof(PresupuestoItem),
+            typeof(Usuario), typeof(Rol)
         })
         {
             modelBuilder.Entity(type).Property("Id").ValueGeneratedNever();
@@ -130,6 +134,14 @@ public class TallerGoDbContext : DbContext
         repuesto.Property(r => r.Codigo).HasMaxLength(50);
         repuesto.Property(r => r.Categoria).HasMaxLength(50);
 
+        var stockMov = modelBuilder.Entity<StockMovimiento>();
+        stockMov.HasKey(s => s.Id);
+        stockMov.Property(s => s.Tipo).HasConversion<string>().HasMaxLength(20);
+        stockMov.HasOne<Repuesto>()
+            .WithMany()
+            .HasForeignKey(s => s.RepuestoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         var turno = modelBuilder.Entity<Turno>();
         turno.HasKey(t => t.Id);
         turno.Property(t => t.Estado).HasConversion<string>().HasMaxLength(30);
@@ -148,5 +160,21 @@ public class TallerGoDbContext : DbContext
             .WithMany(p => p.Items)
             .HasForeignKey(i => i.PresupuestoId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        var usuario = modelBuilder.Entity<Usuario>();
+        usuario.HasKey(u => u.Id);
+        usuario.HasIndex(u => u.NombreUsuario).IsUnique();
+        usuario.Property(u => u.NombreUsuario).HasColumnName("Usuario").HasMaxLength(50);
+        usuario.Property(u => u.NombreUsuario).HasMaxLength(50);
+        usuario.HasOne<Empleado>()
+            .WithMany()
+            .HasForeignKey(u => u.EmpleadoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        var rol = modelBuilder.Entity<Rol>();
+        rol.HasKey(r => r.Id);
+        rol.HasIndex(r => r.Nombre).IsUnique();
+        rol.Property(r => r.Nombre).HasMaxLength(50);
+        rol.Property(r => r.Descripcion).HasMaxLength(200);
     }
 }

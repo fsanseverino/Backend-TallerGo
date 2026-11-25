@@ -10,6 +10,7 @@ namespace Backend_TallerGo.Controllers;
 public class RepuestosController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("inventario:ver")]
     public async Task<IActionResult> GetAll()
     {
         var db = AppDb.Open();
@@ -17,6 +18,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("inventario:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -25,6 +27,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("inventario:crear")]
     public async Task<IActionResult> Create(Repuesto repuesto)
     {
         var db = AppDb.Open();
@@ -37,6 +40,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [RequierePermiso("inventario:editar")]
     public async Task<IActionResult> Update(string id, Repuesto datos)
     {
         var db = AppDb.Open();
@@ -59,6 +63,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("inventario:eliminar")]
     public async Task<IActionResult> Delete(string id)
     {
         var db = AppDb.Open();
@@ -72,6 +77,7 @@ public class RepuestosController : ControllerBase
     }
 
     [HttpPost("{id}/stock")]
+    [RequierePermiso("inventario:editar")]
     public async Task<IActionResult> AjustarStock(string id, AjusteStockRequest request)
     {
         var db = AppDb.Open();
@@ -80,11 +86,34 @@ public class RepuestosController : ControllerBase
             return NotFound();
 
         var cantidad = request.Cantidad > 0 ? request.Cantidad : 1;
-        repuesto.Stock = request.Tipo.Equals("SALIDA", StringComparison.OrdinalIgnoreCase)
-            ? Math.Max(0, repuesto.Stock - cantidad)
-            : repuesto.Stock + cantidad;
+        var esEntrada = !request.Tipo.Equals("SALIDA", StringComparison.OrdinalIgnoreCase);
+        repuesto.Stock = esEntrada ? repuesto.Stock + cantidad : Math.Max(0, repuesto.Stock - cantidad);
+
+        db.StockMovimientos.Add(new StockMovimiento
+        {
+            Id = Guid.NewGuid().ToString(),
+            RepuestoId = repuesto.Id,
+            Fecha = DateTime.Now,
+            Tipo = esEntrada ? "ENTRADA" : "SALIDA",
+            Cantidad = cantidad,
+            Motivo = string.IsNullOrWhiteSpace(request.Motivo) ? null : request.Motivo.Trim(),
+            StockResultante = repuesto.Stock,
+        });
 
         await db.SaveChangesAsync();
         return Ok(repuesto);
+    }
+
+    [HttpGet("{id}/movimientos")]
+    [RequierePermiso("inventario:ver")]
+    public async Task<IActionResult> GetMovimientos(string id)
+    {
+        var db = AppDb.Open();
+        var movimientos = await db.StockMovimientos
+            .AsNoTracking()
+            .Where(m => m.RepuestoId == id)
+            .OrderByDescending(m => m.Fecha)
+            .ToListAsync();
+        return Ok(movimientos);
     }
 }

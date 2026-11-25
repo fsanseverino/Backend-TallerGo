@@ -10,6 +10,7 @@ namespace Backend_TallerGo.Controllers;
 public class CatalogosController : ControllerBase
 {
     [HttpGet]
+    [RequierePermiso("catalogos:ver")]
     public async Task<IActionResult> List()
     {
         var db = AppDb.Open();
@@ -20,6 +21,7 @@ public class CatalogosController : ControllerBase
     }
 
     [HttpGet("{clave}/valores")]
+    [RequierePermiso("catalogos:ver")]
     public async Task<IActionResult> ValoresPorClave(string clave)
     {
         var db = AppDb.Open();
@@ -37,6 +39,7 @@ public class CatalogosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequierePermiso("catalogos:ver")]
     public async Task<IActionResult> GetById(string id)
     {
         var db = AppDb.Open();
@@ -48,6 +51,7 @@ public class CatalogosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso("catalogos:editar")]
     public async Task<IActionResult> Crear([FromBody] CatalogoCrear body)
     {
         if (string.IsNullOrWhiteSpace(body.Nombre) || string.IsNullOrWhiteSpace(body.Clave))
@@ -71,6 +75,7 @@ public class CatalogosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RequierePermiso("catalogos:editar")]
     public async Task<IActionResult> Eliminar(string id)
     {
         var db = AppDb.Open();
@@ -84,6 +89,7 @@ public class CatalogosController : ControllerBase
     }
 
     [HttpPost("{catalogoId}/valores")]
+    [RequierePermiso("catalogos:editar")]
     public async Task<IActionResult> AgregarValor(string catalogoId, [FromBody] CatalogoValorCrear body)
     {
         if (string.IsNullOrWhiteSpace(body.Valor))
@@ -113,6 +119,7 @@ public class CatalogosController : ControllerBase
     }
 
     [HttpDelete("valores/{id}")]
+    [RequierePermiso("catalogos:editar")]
     public async Task<IActionResult> EliminarValor(string id)
     {
         var db = AppDb.Open();

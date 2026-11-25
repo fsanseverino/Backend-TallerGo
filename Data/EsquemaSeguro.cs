@@ -36,6 +36,11 @@ public static class EsquemaSeguro
             Ejecutar(db, "ALTER TABLE Trabajos ADD COLUMN PresupuestoId TEXT NULL");
         }
 
+        if (!ExisteColumna(db, "Usuarios", "DebeCambiarPassword"))
+        {
+            Ejecutar(db, "ALTER TABLE Usuarios ADD COLUMN DebeCambiarPassword INTEGER NOT NULL DEFAULT 0");
+        }
+
         var sentencias = new[]
         {
             // phpcs:disable
@@ -76,6 +81,15 @@ public static class EsquemaSeguro
                 Observaciones TEXT NOT NULL,
                 TrabajoId TEXT NULL
             )",
+            @"CREATE TABLE IF NOT EXISTS StockMovimientos (
+                Id TEXT NOT NULL PRIMARY KEY,
+                RepuestoId TEXT NOT NULL,
+                Fecha TEXT NOT NULL,
+                Tipo TEXT NOT NULL,
+                Cantidad INTEGER NOT NULL,
+                Motivo TEXT NULL,
+                StockResultante INTEGER NOT NULL
+            )",
             @"CREATE TABLE IF NOT EXISTS PresupuestoItems (
                 Id TEXT NOT NULL PRIMARY KEY,
                 PresupuestoId TEXT NOT NULL,
@@ -84,6 +98,23 @@ public static class EsquemaSeguro
                 Cantidad TEXT NOT NULL,
                 PrecioUnitario TEXT NOT NULL,
                 RepuestoId TEXT NULL
+            )",
+            @"CREATE TABLE IF NOT EXISTS Roles (
+                Id TEXT NOT NULL PRIMARY KEY,
+                Nombre TEXT NOT NULL,
+                Descripcion TEXT NOT NULL,
+                Permisos TEXT NOT NULL
+            )",
+            @"CREATE TABLE IF NOT EXISTS Usuarios (
+                Id TEXT NOT NULL PRIMARY KEY,
+                EmpleadoId TEXT NULL,
+                Usuario TEXT NOT NULL,
+                PasswordHash TEXT NOT NULL,
+                Sal TEXT NOT NULL,
+                RolId TEXT NOT NULL,
+                Estado TEXT NOT NULL,
+                DebeCambiarPassword INTEGER NOT NULL DEFAULT 0,
+                CreatedAt TEXT NULL
             )",
         };
         foreach (var sql in sentencias)
